@@ -61,351 +61,109 @@
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-
     <section class="section">
       <div class="row">
         <div class="col-lg-12">
-
           <div class="card">
             <div class="card-body">
-              <div class="container-fluid mt-3" id="menuGeral">
-                <div class="row">
-                  <article>
-                    <div class="row mb-3">
-                      <h3>Script de Rat</h3>
+              <h3 class="mb-3">Script de Rat</h3>
+
+              <form id="scriptForm">
+                <!-- Data do Chamado -->
+                <div class="form-floating mb-3">
+                  <input type="date" class="form-control" id="dataChamado" oninput="infoGeral()">
+                  <label for="dataChamado">Data do chamado:</label>
+                </div>
+
+                <!-- Número do Chamado -->
+                <div class="form-floating mb-3">
+                  <input type="number" class="form-control" id="numeroChamado" oninput="infoGeral()">
+                  <label for="numeroChamado">Número do chamado:</label>
+                </div>
+
+                <!-- Cliente -->
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="cliente" oninput="infoGeral()">
+                  <label for="cliente">Cliente:</label>
+                </div>
+
+                <!-- Quantidade de Patrimônios Tratados -->
+                <div class="form-floating mb-3">
+                  <input type="number" class="form-control" id="quantidadePatrimonios" oninput="infoGeral()">
+                  <label for="quantidadePatrimonios">Quantidade de patrimônios tratados:</label>
+                </div>
+
+                <!-- KM Inicial e Final -->
+                <div class="form-floating mb-3">
+                  <input type="number" class="form-control" id="kmInicial" oninput="infoGeral()">
+                  <label for="kmInicial">KM inicial:</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="number" class="form-control" id="kmFinal" oninput="infoGeral()">
+                  <label for="kmFinal">KM final:</label>
+                </div>
+
+                <!-- Horários de Chegada e Saída -->
+                <div class="form-floating mb-3">
+                  <input type="time" class="form-control" id="horaChegada" oninput="infoGeral()">
+                  <label for="horaChegada">Horário de chegada no chamado:</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="time" class="form-control" id="horaSaida" oninput="infoGeral()">
+                  <label for="horaSaida">Horário de saída do chamado:</label>
+                </div>
+
+                <!-- Endereços -->
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="enderecoPartida" oninput="infoGeral()">
+                  <label for="enderecoPartida">Endereço de partida:</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="enderecoChegada" oninput="infoGeral()">
+                  <label for="enderecoChegada">Endereço de chegada:</label>
+                </div>
+
+                <!-- Informações Adicionais -->
+                <div class="form-floating mb-3">
+                  <textarea class="form-control" id="informacoesAdicionais" style="height: 250px" oninput="infoGeral()"></textarea>
+                  <label for="informacoesAdicionais">Breve descrição do chamado:</label>
+                </div>
+
+                <!-- Ações -->
+                <div class="mb-3">
+                  <button type="button" class="btn btn-outline-primary" onclick="copResp2()" data-bs-toggle="modal" data-bs-target="#exampleModal3">Copiar Texto</button>
+                  <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
+                </div>
+              </form>
+
+              <!-- Modal -->
+              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="exampleModalLabel">Texto Copiado</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-
-
-                    <div class="form-floating mb-3">
-                      <input class="form-control" value="0" placeholder="Leave a comment here" type="number"
-                        id="etp-uso" oninput="infoGeral()" />
-                      <label for="floatingTextarea2">Uso:</label>
+                    <div class="modal-body">
+                      <div class="alert alert-warning" role="alert">Ola</div>
+                      <p id="geralResp0"></p>
+                      <p id="geralResp1"></p>
+                      <p id="geralResp2"></p>
                     </div>
-
-                    <div id="naoFaltou2 mb-3">
-                      <div class="form-floating">
-                        <input class="form-control" placeholder="Leave a comment here" type="text" id="parcicipantes"
-                          oninput="infoGeral()" />
-                        <label for="floatingTextarea2">Quem participou da consultoria/departamento:</label>
-                      </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Fechar</button>
                     </div>
-
-                    <div class="row mb-3 mt-3">
-                      <h3>Observações sobre a consultoria</h3>
-                    </div>
-
-                    <div class="row mb-3">
-                      <h5>Contabilidade Atrasou ?</h5>
-                    </div>
-
-                    <div class="mb-3" onclick="falta()">
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="horário" id="inlineRadio1" value="Não"
-                          oninput="infoGeral()" />
-                        <label class="form-check-label" for="inlineRadio1">Não</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="horário" id="inlineRadio2"
-                          value="+10 minutos atrasados" oninput="infoGeral()" />
-                        <label class="form-check-label" for="inlineRadio2">+10 min atrasados</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="horário" id="inlineRadio3" value=+15 minutos
-                          atrasados" oninput="infoGeral()" />
-                        <label class="form-check-label" for="inlineRadio3">+15 min atrasados</label>
-                      </div>
-                    </div>
-
-                    <div class="mb-3">
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="horário" id="inlineRadio1"
-                          value="+20 minutos atrasados" oninput="infoGeral()" />
-                        <label class="form-check-label" for="inlineRadio1">+20 min atrasados</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="horário" id="inlineRadio2" value="Faltou"
-                          oninput="faltou()" />
-                        <label class="form-check-label" for="inlineRadio2">Faltou!</label>
-                      </div>
-                    </div>
-
-
-                    <div class="form-check form-check-inline mb-3" id="falta" style="display: none">
-                      <div class="alert alert-warning" role="alert">
-                        Preencher com informações importantes para serem preenchidas no Fly NÃO ESQUEÇA DO TICKET
-                      </div>
-                      <textarea class="form-control" name="etapaBackup2" id="faltaCliente" rows="5"
-                        cols="55"></textarea>
-                      <button type="button" class="btn btn-outline-primary mt-3" onclick="copRespFalta()"
-                        data-bs-toggle="modal" data-bs-target="#exampleModaFaltou">
-                        Copiar Texto
-                      </button>
-                      <button type="button" class="btn btn-outline-danger mt-3" onclick="deleteRespGeral()">
-                        Apagar Tudo
-                      </button>
-                    </div>
-
-                    <div class="modal fade" id="exampleModaFaltou" tabindex="-1" aria-labelledby="exampleModalLabel"
-                      aria-hidden="true">
-                      <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">
-                              Texto Copiado
-                            </h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                            <p id="respFaltou"></p>
-                            <p id="respFaltou1"></p>
-                            <p id="respFaltou2"></p>
-                            <p id="respFaltou3"></p>
-                            <p id="respFaltou4"></p>
-                            <p id="respFaltou5"></p>
-                            <p id="respFaltou6"></p>
-                            <p id="respFaltou7"></p>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">
-                              Fechar
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div id="naoFaltou">
-                      <div class="row mb-3">
-                        <h5>Realizaram as atividades anteriores?</h5>
-                      </div>
-
-                      <div class="mb-3">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="atividades" id="inlineRadio1"
-                            value="Sim, a maioria" oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio1">Sim, a maioria</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="atividades" id="inlineRadio2"
-                            value="Em partes" oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">Em partes</label>
-                        </div>
-                      </div>
-
-                      <div class="mb-3">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="atividades" id="inlineRadio1" value="Pouco"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio1">Pouco</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="atividades" id="inlineRadio2" value="Nada"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">Nada</label>
-                        </div>
-                      </div>
-
-                      <div class="row mb-3">
-                        <h5>Dúvidas/Dificuldades da etapa anterior?</h5>
-                      </div>
-
-                      <div class="mb-3" onclick="duvida()">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="duvidas" id="inlineRadio1"
-                            value="Não, entenderam bem" oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio1">Não, entenderam bem</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="duvidas" id="inlineRadio2"
-                            value="Algumas dúvidas" oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">Algumas dúvidas</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="duvidas" id="inlineRadio2"
-                            value="Bastante dificuldade" oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">Bastante dificuldade</label>
-                        </div>
-                      </div>
-
-                      <div class="row mb-3">
-                        <h5>Participativos?</h5>
-                      </div>
-
-                      <div class="mb-3">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="participativos" id="inlineRadio1"
-                            value="Bem Participativos" oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio1">Bem Participativos</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="participativos" id="inlineRadio2"
-                            value="Participativos" oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">Participativos</label>
-                        </div>
-                      </div>
-
-                      <div class="mb-3">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="participativos" id="inlineRadio1"
-                            value="Pouco Participativos" oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio1">Pouco Participativos</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="participativos" id="inlineRadio2"
-                            value="Sem Participação" oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">Sem Participação</label>
-                        </div>
-                      </div>
-                      <div class="mb-3" id="etapa-geral">
-                        <div class="row mb-3">
-                          <h5>Status do chamado</h5>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="checkbox" name="etapa" value="Configuração inicial"
-                            id="flexCheckDefault" oninput="infoGeral()" />
-                          <label class="form-check-label" for="flexCheckDefault">Configuração inicial</label>
-                        </div>
-
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="checkbox" name="etapa" value="Lista de Tarefas"
-                            id="flexCheckDefault2" oninput="infoGeral()" />
-                          <label class="form-check-label" for="flexCheckDefault2">Lista de Tarefas</label>
-                        </div>
-
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="checkbox" name="etapa" value="Robô"
-                            id="flexCheckDefault3" oninput="infoGeral()" />
-                          <label class="form-check-label" for="flexCheckDefault3">Robô</label>
-                        </div>
-
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="checkbox" name="etapa" value="Gestão de Processos"
-                            id="flexCheckDefault5" oninput="infoGeral()" />
-                          <label class="form-check-label" for="flexCheckDefault5">Gestão de Processos</label>
-                        </div>
-
-                      </div>
-
-
-                      <div class="row mb-3">
-                        <h5>Nota para a consultoria:</h5>
-                      </div>
-
-                      <div class="mb-3">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="nota" id="inlineRadio1" value="1"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio1">1</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="nota" id="inlineRadio2" value="2"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">2</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="nota" id="inlineRadio2" value="3"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">3</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="nota" id="inlineRadio1" value="4"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio1">4</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="nota" id="inlineRadio2" value="5"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">5</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="nota" id="inlineRadio2" value="6"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">6</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="nota" id="inlineRadio1" value="7"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio1">7</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="nota" id="inlineRadio2" value="8"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">8</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="nota" id="inlineRadio2" value="9"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">9</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="nota" id="inlineRadio2" value="10"
-                            oninput="infoGeral()" />
-                          <label class="form-check-label" for="inlineRadio2">10</label>
-                        </div>
-                      </div>
-
-                      <div class="form-floating mb-3">
-                        <textarea class="form-control" placeholder="Leave a comment here" id="geralObs"
-                          style="height: 250px" oninput="infoGeral()"></textarea>
-                        <label for="floatingTextarea2">Informações Adicionais:</label>
-                      </div>
-                    </div>
-
-                    <div class="mb-3" id="faltouButton">
-                      <button type="button" class="btn btn-outline-primary" onclick="copResp2()" data-bs-toggle="modal"
-                        data-bs-target="#exampleModal3">
-                        Copiar Texto
-                      </button>
-                      <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">
-                        Apagar Tudo
-                      </button>
-                    </div>
-
-                    <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel"
-                      aria-hidden="true">
-                      <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">
-                              Texto Copiado
-                            </h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                            <div class="alert alert-warning" role="alert">
-                              Não esqueça de criar o Ticket no movidesk !
-                            </div>
-                            <p id="geralResp0"></p>
-                            <p id="geralResp1"></p>
-                            <p id="geralResp2"></p>
-                            <p id="geralResp6"></p>
-                            <p id="geralResp55"></p>
-                            <p id="geralResp7"></p>
-                            <p id="geralResp8"></p>
-                            <p id="geralResp9"></p>
-                            <p id="geralResp10"></p>
-                            <p id="geralResp11"></p>
-                            <p id="geralResp12"></p>
-                            <p id="geralResp13"></p>
-                            <p id="geralResp14"></p>
-                            <p id="geralResp15"></p>
-                            <p id="geralResp16"></p>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">
-                              Fechar
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </article>
+                  </div>
                 </div>
               </div>
-            </div>
-    </section>
 
-  </main><!-- End #main -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
 
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
@@ -424,13 +182,6 @@
   <!-- Vendor JS Files -->
   <script src="script.js"></script>
   <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/vendor/chart.js/chart.umd.js"></script>
-  <script src="assets/vendor/echarts/echarts.min.js"></script>
-  <script src="assets/vendor/quill/quill.min.js"></script>
-  <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
-  <script src="assets/vendor/tinymce/tinymce.min.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
