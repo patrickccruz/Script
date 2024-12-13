@@ -15,10 +15,10 @@ function infoGeral() {
   // Atualizar os parágrafos do modal
   document.getElementById("geralResp0").textContent = `Data do chamado: ${dataChamado}\nNúmero do chamado: ${numeroChamado}`;
   document.getElementById("geralResp1").textContent = `Cliente: ${cliente}\nQuantidade de patrimônios tratados: ${quantidadePatrimonios}`;
-  document.getElementById("geralResp2").textContent = `KM inicial: ${kmInicial}\nKM final: ${kmFinal}\nHorário de chegada: ${horaChegada}\nHorário de saída: ${horaSaida}\nEndereço de partida: ${enderecoPartida}\nEndereço de chegada: ${enderecoChegada}\nBreve descrição do chamado: ${informacoesAdicionais}`;
+  document.getElementById("geralResp2").textContent = `KM inicial: ${kmInicial}\nKM final: ${kmFinal}\nHorário de chegada: ${horaChegada}\nHorário de saída: ${horaSaida}\nEndereço de partida: ${enderecoPartida}\nEndereço de chegada: ${enderecoChegada}\nDescrição: ${informacoesAdicionais}`;
 }
 
-// Função para copiar o texto do modal para a área de transferência
+// Função para copiar o texto do modal e abrir o WhatsApp para envio
 function copResp2() {
   // Atualizar informações antes de copiar
   infoGeral();
@@ -28,7 +28,16 @@ function copResp2() {
   const geralResp2 = document.getElementById("geralResp2").textContent;
 
   const textoCompleto = `${geralResp0}\n${geralResp1}\n${geralResp2}`;
+
+  // Copiar para a área de transferência
   navigator.clipboard.writeText(textoCompleto)
+    .then(() => {
+      // Abrir WhatsApp para envio
+      const textoEncoded = encodeURIComponent(textoCompleto);
+      const whatsappURL = `https://wa.me/?text=${textoEncoded}`;
+      window.open(whatsappURL, "_blank");
+    })
+    .catch(err => console.error("Erro ao copiar o texto: ", err));
 }
 
 // Função para apagar todos os campos do formulário
