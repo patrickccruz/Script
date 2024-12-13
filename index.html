@@ -87,6 +87,13 @@
                   <label for="cliente">Cliente:</label>
                 </div>
 
+                <!-- Nome de quem informou o chamado -->
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="nomeInformante" oninput="infoGeral()">
+                  <label for="nomeInformante">Nome de quem informou o chamado:</label>
+                </div>
+
+
                 <!-- Quantidade de Patrimônios Tratados -->
                 <div class="form-floating mb-3">
                   <input type="number" class="form-control" id="quantidadePatrimonios" oninput="infoGeral()">
@@ -125,19 +132,22 @@
 
                 <!-- Informações Adicionais -->
                 <div class="form-floating mb-3">
-                  <textarea class="form-control" id="informacoesAdicionais" style="height: 250px" oninput="infoGeral()"></textarea>
+                  <textarea class="form-control" id="informacoesAdicionais" style="height: 250px"
+                    oninput="infoGeral()"></textarea>
                   <label for="informacoesAdicionais">Breve descrição do chamado:</label>
                 </div>
 
                 <!-- Ações -->
                 <div class="mb-3">
-                  <button type="button" class="btn btn-outline-primary" onclick="copResp2()" data-bs-toggle="modal" data-bs-target="#exampleModal3">Copiar Texto</button>
+                  <button type="button" class="btn btn-outline-primary" onclick="copResp2()" data-bs-toggle="modal"
+                    data-bs-target="#exampleModal3">Copiar Texto</button>
                   <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
                 </div>
               </form>
 
               <!-- Modal -->
-              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
                 <div class="modal-dialog modal-xl">
                   <div class="modal-content">
                     <div class="modal-header">
