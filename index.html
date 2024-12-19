@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Gerador de Script</title>
+  <title>Script</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -30,6 +30,14 @@
 
   <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
+  <style>
+    :focus {
+      border-color: #1bd81b !important; /* Use !important para sobrescrever */
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5) !important;
+      outline: w !important;
+    }
+  </style>
+  
 </head>
 
 <body>
@@ -39,8 +47,8 @@
 
     <div class="d-flex align-items-center justify-content-between">
       <a href="index.html" class="logo d-flex align-items-center">
-        <img src="assets/img/favicon.png" alt="">
-        <span class="d-none d-lg-block">Gerador de Script</span>
+        <img src="assets/img/Icon geral.png" alt="">
+        <span class="d-none d-lg-block">Script</span>
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
     </div><!-- End Logo -->
@@ -54,7 +62,7 @@
       <li class="nav-item">
         <a class="nav-link " href="index.html">
           <i class="bi bi-grid"></i>
-          <span>Gerador de Script</span>
+          <span>Gerador Script</span>
         </a>
       </li><!-- End Dashboard Nav -->
     </ul>
@@ -91,7 +99,6 @@
                   <input type="text" class="form-control" id="nomeInformante" oninput="infoGeral()">
                   <label for="nomeInformante">Nome de quem informou o chamado:</label>
                 </div>
-
 
                 <!-- Quantidade de Patrimônios Tratados -->
                 <div class="form-floating mb-3">
@@ -143,29 +150,6 @@
                   <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
                 </div>
               </form>
-
-              <!-- Modal -->
-              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h1 class="modal-title fs-5" id="exampleModalLabel">Texto Copiado</h1>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="alert alert-warning" role="alert">Ola</div>
-                      <p id="geralResp0"></p>
-                      <p id="geralResp1"></p>
-                      <p id="geralResp2"></p>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Fechar</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
             </div>
           </div>
         </div>
