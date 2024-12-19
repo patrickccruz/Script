@@ -12,12 +12,12 @@ body {
 }
 
 a {
-  color: #4154f1;
+  color: #0f2714;
   text-decoration: none;
 }
 
 a:hover {
-  color: #717ff5;
+  color: #71f583;
   text-decoration: none;
 }
 
@@ -69,7 +69,7 @@ h6 {
   right: 15px;
   bottom: 15px;
   z-index: 99999;
-  background: #4154f1;
+  background: #032003;
   width: 40px;
   height: 40px;
   border-radius: 4px;
@@ -83,7 +83,7 @@ h6 {
 }
 
 .back-to-top:hover {
-  background: #6776f4;
+  background: #67f47a;
   color: #fff;
 }
 
@@ -211,7 +211,7 @@ h6 {
 /* Card */
 .card {
   margin-bottom: 30px;
-  border: none;
+  border: 20px;
   border-radius: 5px;
   box-shadow: 0px 0 30px rgba(1, 41, 112, 0.1);
 }
@@ -225,7 +225,7 @@ h6 {
 }
 
 .card-title {
-  padding: 20px 0 15px 0;
+  padding: 20px 20px 15px 20px;
   font-size: 18px;
   font-weight: 500;
   color: #012970;
@@ -239,7 +239,7 @@ h6 {
 }
 
 .card-body {
-  padding: 0 20px 20px 20px;
+  padding: 20px 20px 20px 20px;
 }
 
 .card-img-overlay {
@@ -309,7 +309,7 @@ h6 {
 }
 
 .breadcrumb a:hover {
-  color: #51678f;
+  color: #538f51;
 }
 
 .breadcrumb .breadcrumb-item::before {
@@ -334,7 +334,7 @@ h6 {
 
 .nav-tabs-bordered .nav-link:hover,
 .nav-tabs-bordered .nav-link:focus {
-  color: #4154f1;
+  color: #5ef141;
 }
 
 .nav-tabs-bordered .nav-link.active {
@@ -364,7 +364,7 @@ h6 {
 .logo span {
   font-size: 26px;
   font-weight: 700;
-  color: #012970;
+  color: #020407;
   font-family: "Nunito", sans-serif;
 }
 
@@ -383,7 +383,7 @@ h6 {
   font-size: 32px;
   padding-left: 10px;
   cursor: pointer;
-  color: #012970;
+  color: #020305;
 }
 
 .header .search-bar {
@@ -676,7 +676,7 @@ h6 {
   align-items: center;
   font-size: 15px;
   font-weight: 600;
-  color: #4154f1;
+  color: #010105;
   transition: 0.3;
   background: #f6f9ff;
   padding: 10px 15px;
@@ -686,7 +686,7 @@ h6 {
 .sidebar-nav .nav-link i {
   font-size: 16px;
   margin-right: 10px;
-  color: #4154f1;
+  color: #010205;
 }
 
 .sidebar-nav .nav-link.collapsed {
@@ -699,12 +699,12 @@ h6 {
 }
 
 .sidebar-nav .nav-link:hover {
-  color: #4154f1;
+  color: #41f14a;
   background: #f6f9ff;
 }
 
 .sidebar-nav .nav-link:hover i {
-  color: #4154f1;
+  color: #56f141;
 }
 
 .sidebar-nav .nav-link .bi-chevron-down {
@@ -742,7 +742,7 @@ h6 {
 
 .sidebar-nav .nav-content a:hover,
 .sidebar-nav .nav-content a.active {
-  color: #4154f1;
+  color: #41f16d;
 }
 
 .sidebar-nav .nav-content a.active i {
@@ -769,7 +769,7 @@ h6 {
 
 .dashboard .filter .icon:hover,
 .dashboard .filter .icon:focus {
-  color: #4154f1;
+  color: #50f141;
 }
 
 .dashboard .filter .dropdown-header {
@@ -898,7 +898,7 @@ h6 {
 }
 
 .dashboard .news h4 a:hover {
-  color: #4154f1;
+  color: #5ef141;
 }
 
 .dashboard .news p {
@@ -1014,7 +1014,7 @@ h6 {
 }
 
 .profile .profile-card .social-links a:hover {
-  color: #012970;
+  color: #0e7001;
 }
 
 .profile .profile-overview .row {
@@ -1214,12 +1214,12 @@ h6 {
 
 .footer .copyright {
   text-align: center;
-  color: #012970;
+  color: #030507;
 }
 
 .footer .credits {
   padding-top: 5px;
   text-align: center;
   font-size: 13px;
-  color: #012970;
+  color: #030405;
 }
