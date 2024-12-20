@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Script</title>
+  <title>Gerador de Script</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -33,11 +33,10 @@
   <style>
     :focus {
       border-color: #1bd81b !important; /* Use !important para sobrescrever */
-      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5) !important;
-      outline: w !important;
+      box-shadow: 0 0 5px rgb(7, 228, 25) !important;
+      outline: none !important;
     }
   </style>
-  
 </head>
 
 <body>
@@ -100,6 +99,7 @@
                   <label for="nomeInformante">Nome de quem informou o chamado:</label>
                 </div>
 
+
                 <!-- Quantidade de Patrimônios Tratados -->
                 <div class="form-floating mb-3">
                   <input type="number" class="form-control" id="quantidadePatrimonios" oninput="infoGeral()">
@@ -150,6 +150,29 @@
                   <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
                 </div>
               </form>
+
+              <!-- Modal -->
+              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="exampleModalLabel">Texto Copiado</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="alert alert-warning" role="alert">Ola</div>
+                      <p id="geralResp0"></p>
+                      <p id="geralResp1"></p>
+                      <p id="geralResp2"></p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
