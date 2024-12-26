@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -52,50 +54,39 @@
                 <div class="card-body">
 
                   <div class="pt-4 pb-2">
-                    <h5 class="card-title text-center pb-0 fs-4">Crie a sua conta</h5>
-                    <p class="text-center small">Preencha todos os dadoss</p>
+                    <h5 class="card-title text-center pb-0 fs-4">Entre com sua conta</h5>
+                    <p class="text-center small">Entre com o seu usuario e senha</p>
                   </div>
 
-                  <form class="row g-3 needs-validation" novalidate action="register.php" method="POST">
-                    <div class="col-12">
-                      <label for="yourName" class="form-label">Seu Nome</label>
-                      <input type="text" name="name" class="form-control" id="yourName" required>
-                      <div class="invalid-feedback">Por favor coloque o seu nome!</div>
-                    </div>
+                  <form class="row g-3 needs-validation" novalidate action="register.php" method="post">
 
-                    <div class="col-12">
-                      <label for="yourEmail" class="form-label">Coloque o seu e-mail corporativo</label>
-                      <input type="email" name="email" class="form-control" id="yourEmail" required>
-                      <div class="invalid-feedback">Por favor coloque o seu e-mail corporativo</div>
-                    </div>
 
                     <div class="col-12">
                       <label for="yourUsername" class="form-label">Usuario</label>
                       <div class="input-group has-validation">
                         <span class="input-group-text" id="inputGroupPrepend">@</span>
                         <input type="text" name="username" class="form-control" id="yourUsername" required>
-                        <div class="invalid-feedback">Por favor coloque um nome de usuario</div>
+                        <div class="invalid-feedback">Por favor coloque o seu usuario</div>
                       </div>
                     </div>
 
                     <div class="col-12">
                       <label for="yourPassword" class="form-label">Senha</label>
                       <input type="password" name="password" class="form-control" id="yourPassword" required>
-                      <div class="invalid-feedback">Por favor, coloque uma senha!</div>
+                      <div class="invalid-feedback">Coloque a sua senha!</div>
                     </div>
 
                     <div class="col-12">
                       <div class="form-check">
-                        <input class="form-check-input" name="terms" type="checkbox" value="" id="acceptTerms" required>
-                        <label class="form-check-label" for="acceptTerms">eu concordo e aceito os <a href="#">Termos e condiçoes</a></label>
-                        <div class="invalid-feedback">Voce tem que aceitar. antes de proseguir</div>
+                        <input class="form-check-input" type="checkbox" name="remember" value="true" id="rememberMe">
+                        <label class="form-check-label" for="rememberMe">Lembre-me</label>
                       </div>
                     </div>
                     <div class="col-12">
-                      <button class="btn btn-primary w-100" type="submit">Crie uma conta</button>
+                      <button class="btn btn-primary w-100" type="submit">Login</button>
                     </div>
                     <div class="col-12">
-                      <p class="small mb-0">Você ja tem uma conta? <a href="pages-login.html">Entre com a sua conta!</a></p>
+                      <p class="small mb-0">Não tem uma conta ?<a href="pages-register.html">Crie a sua conta</a></p>
                     </div>
                   </form>
 
@@ -103,11 +94,13 @@
               </div>
 
               <div class="credits">
-                <!-- All the links in the footer should remain intact. -->
-                <!-- You can delete the links only if you purchased the pro version. -->
-                <!-- Licensing information: https://bootstrapmade.com/license/ -->
-                <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/ -->
-                Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+                  <div class="copyright">
+                    &copy; Copyright <strong><span>Patrick C Cruz</span></strong>. Todos os direitos Reservado
+                  </div>
+                  <div class="credits">
+                    Feito pelo <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C
+                      Cruz</a>
+                  </div>
               </div>
 
             </div>
