@@ -41,6 +41,14 @@
 
 <body>
 
+  <?php
+    session_start();
+    if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
+        header("Location: ./page/user-login.php");
+        exit;
+    }
+  ?>
+
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
 
