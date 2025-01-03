@@ -21,8 +21,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($user) {
       if (password_verify($password, $user['password'])) {
+        $userName = $user['name'];
+        $userUsername = $user['username'];
+
         $_SESSION['loggedin'] = true;
-        $_SESSION['username'] = $user['username'];
+        $_SESSION['user'] = [
+            'name' => $userName,
+            'username' => $userUsername
+        ];
+
         header("Location: ../index.php");
         exit;
       } else {

@@ -1,3 +1,23 @@
+<?php
+require_once '../db.php';
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $username = $_POST['username'];
+    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+
+    $query = $conn->prepare("INSERT INTO users (name, email, username, password) VALUES (?, ?, ?, ?)");
+    $query->bind_param("ssss", $name, $email, $username, $password);
+
+    if ($query->execute()) {
+        header('Location: user-login.php');
+    } else {
+        echo "Erro ao registrar.";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -56,7 +76,7 @@
                     <p class="text-center small">Preencha todos os dados</p>
                   </div>
 
-                  <form class="row g-3 needs-validation" novalidate action="register.php" method="POST">
+                  <form class="row g-3 needs-validation" novalidate action="page-register.php" method="POST">
                     <div class="col-12">
                       <label for="yourName" class="form-label">Seu Nome</label>
                       <input type="text" name="name" class="form-control" id="yourName" required>
@@ -87,7 +107,7 @@
                     <div class="col-12">
                       <div class="form-check">
                         <input class="form-check-input" name="terms" type="checkbox" value="" id="acceptTerms" required>
-                        <label class="form-check-label" for="acceptTerms">eu concordo e aceito os <a href="#">Termos e condiçoes</a></label>
+                        <label class="form-check-label" for="acceptTerms">Eu concordo e aceito os <a href="#">Termos e condiçoes</a></label>
                         <div class="invalid-feedback">Voce tem que aceitar. antes de proseguir</div>
                       </div>
                     </div>
@@ -103,7 +123,6 @@
               </div>
 
               <div class="credits">
-                <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/ -->
                 Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
               </div>
 
@@ -130,6 +149,29 @@
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+
+  <script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+      'use strict'
+
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      var forms = document.querySelectorAll('.needs-validation')
+
+      // Loop over them and prevent submission
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+  </script>
 
 </body>
 
