@@ -16,7 +16,7 @@
   <!-- Google Fonts -->
   <link href="https://fonts.gstatic.com" rel="preconnect">
   <link
-    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i"
     rel="stylesheet">
 
   <!-- Vendor CSS Files -->
@@ -54,6 +54,11 @@
       $user = ['name' => 'Usuário', 'username' => 'username'];
   }
   ?>
+
+<script>
+  // Armazenar o nome do usuário logado na sessionStorage
+  sessionStorage.setItem('nomeUsuario', '<?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?>');
+</script>
 
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
@@ -119,7 +124,7 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="./index.php">
+        <a class="nav-link " href="index.html">
           <i class="bi bi-grid"></i>
           <span>Gerador Script</span>
         </a>
@@ -134,7 +139,7 @@
           <div class="card">
             <div class="card-body">
 
-              <form id="scriptForm">
+              <form id="scriptForm" enctype="multipart/form-data">
                 <!-- Data do Chamado -->
                 <div class="form-floating mb-3">
                   <input type="date" class="form-control" id="dataChamado" oninput="infoGeral()">
@@ -203,8 +208,15 @@
                   <label for="informacoesAdicionais">Breve descrição do chamado:</label>
                 </div>
 
+                <!-- Upload de Arquivo -->
+                <div class="form-floating mb-3">
+                  <input type="file" class="form-control" id="arquivo" name="arquivo" accept=".pdf">
+                  <label for="arquivo">Anexar Rat (PDF):</label>
+                </div>
+
                 <!-- Ações -->
                 <div class="mb-3">
+                  <button type="button" class="btn btn-outline-primary" id="enviarDiscord">Enviar para Discord</button>
                   <button type="button" class="btn btn-outline-primary" onclick="copResp2()" data-bs-toggle="modal"
                     data-bs-target="#exampleModal3">Copiar Texto</button>
                   <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
@@ -221,7 +233,6 @@
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                      <div class="alert alert-warning" role="alert">Ola</div>
                       <p id="geralResp0"></p>
                       <p id="geralResp1"></p>
                       <p id="geralResp2"></p>
@@ -257,13 +268,8 @@
 
   <!-- Vendor JS Files -->
   <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
   <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
-  <script src="assets/vendor/chart.js/chart.umd.js"></script>
-  <script src="assets/vendor/echarts/echarts.min.js"></script>
-  <script src="assets/vendor/quill/quill.min.js"></script>
-  <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
-  <script src="assets/vendor/tinymce/tinymce.min.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>

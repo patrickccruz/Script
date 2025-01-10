@@ -173,6 +173,13 @@
   }
 
   /**
+   * Certifique-se de que o tinymce está definido
+   */
+  if (typeof tinymce === 'undefined') {
+    console.error("tinymce não está definido. Certifique-se de que o tinymce está sendo carregado corretamente.");
+  }
+
+  /**
    * Initiate TinyMCE Editor
    */
   const useDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
