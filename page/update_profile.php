@@ -1,22 +1,34 @@
 <?php
 session_start();
-require_once '../db.php';
+include '../db.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header('Location: user-login.php');
-    exit();
-}
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  if (!isset($_SESSION['user']['id'])) {
+    die("Usuário não autenticado.");
+  }
 
-$user_id = $_SESSION['user_id'];
-$name = $_POST['name'];
-$email = $_POST['email'];
+  $userId = $_SESSION['user']['id'];
+  $name = $_POST['name'];
+  $email = $_POST['email'];
 
-$query = $conn->prepare("UPDATE users SET name = ?, email = ? WHERE id = ?");
-$query->bind_param("ssi", $name, $email, $user_id);
-
-if ($query->execute()) {
-    header('Location: profile.php');
-} else {
-    echo "Erro ao atualizar perfil.";
+  // Atualizar as informações do usuário no banco de dados
+  $stmt = $conn->prepare("UPDATE users SET name = ?, email = ? WHERE id = ?");
+  if ($stmt) {
+    $stmt->bind_param("ssi", $name, $email, $userId);
+    if ($stmt->execute()) {
+      // Atualizar as informações na sessão
+      $_SESSION['user']['name'] = $name;
+      $_SESSION['user']['email'] = $email;
+      $_SESSION['update_success'] = "Informações atualizadas com sucesso.";
+      echo "<script>alert('Informações atualizadas: Nome - $name, Email - $email');</script>";
+      header("Location: profile.php");
+      exit;
+    } else {
+      echo "Erro ao atualizar o perfil: " . $stmt->error;
+    }
+    $stmt->close();
+  } else {
+    echo "Erro na preparação da consulta: " . $conn->error;
+  }
 }
 ?>

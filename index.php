@@ -50,14 +50,17 @@
     // Supondo que os dados do usuário estejam armazenados na sessão
     if (isset($_SESSION['user'])) {
       $user = $_SESSION['user'];
-  } else {
-      $user = ['name' => 'Usuário', 'username' => 'username'];
-  }
+      // Log para informar o que está salvo na sessão
+      error_log("Dados do usuário na sessão: " . print_r($user, true));
+    } else {
+      $user = ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
+    }
   ?>
 
 <script>
-  // Armazenar o nome do usuário logado na sessionStorage
+  // Armazenar o nome e o ID do usuário logado na sessionStorage
   sessionStorage.setItem('nomeUsuario', '<?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?>');
+  sessionStorage.setItem('idUsuario', '<?php echo htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8'); ?>');
 </script>
 
   <!-- ======= Header ======= -->

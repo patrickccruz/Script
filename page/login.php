@@ -21,14 +21,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($user) {
       if (password_verify($password, $user['password'])) {
+        $userId = $user['id'];
         $userName = $user['name'];
         $userUsername = $user['username'];
 
         $_SESSION['loggedin'] = true;
         $_SESSION['user'] = [
+            'id' => $userId,
             'name' => $userName,
             'username' => $userUsername
         ];
+
+        // Log para informar o que está salvo na sessão
+        error_log("Usuário logado: " . print_r($_SESSION['user'], true));
 
         header("Location: ../index.php");
         exit;

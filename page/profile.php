@@ -33,6 +33,92 @@
 
 <body>
 
+  <?php
+    session_start();
+    include '../db.php';
+
+    if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
+        header("Location: user-login.php");
+        exit;
+    }
+
+    // Buscar o nome do usuário pelo ID que está no banco de dados
+    if (isset($_SESSION['user']['id'])) {
+        $userId = $_SESSION['user']['id'];
+        $stmt = $conn->prepare("SELECT name, username, email FROM users WHERE id = ?");
+        if ($stmt) {
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $user = $result->fetch_assoc();
+            $stmt->close();
+        } else {
+            echo "Erro na preparação da consulta: " . $conn->error;
+        }
+    } else {
+        $user = ['name' => 'Usuário', 'username' => 'username', 'email' => 'email@example.com'];
+    }
+
+    // Verificar se há uma mensagem de sucesso na sessão
+    if (isset($_SESSION['update_success'])) {
+        $updateMessage = $_SESSION['update_success'];
+        unset($_SESSION['update_success']);
+    } else {
+        $updateMessage = '';
+    }
+
+    // Verificar se há uma mensagem de sucesso ou erro na sessão
+    if (isset($_SESSION['password_success'])) {
+        $passwordMessage = $_SESSION['password_success'];
+        unset($_SESSION['password_success']);
+    } elseif (isset($_SESSION['password_error'])) {
+        $passwordMessage = $_SESSION['password_error'];
+        unset($_SESSION['password_error']);
+    } else {
+        $passwordMessage = '';
+    }
+  ?>
+
+  <!-- Modal de Alerta -->
+  <?php if ($updateMessage): ?>
+  <div class="modal fade show" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true" style="display: block;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateModalLabel">Atualização de Perfil</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <?php echo htmlspecialchars($updateMessage); ?>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <?php endif; ?>
+
+  <!-- Modal de Alerta -->
+  <?php if ($passwordMessage): ?>
+  <div class="modal fade show" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true" style="display: block;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="passwordModalLabel">Alteração de Senha</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <?php echo htmlspecialchars($passwordMessage); ?>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <?php endif; ?>
+
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
 
@@ -167,7 +253,7 @@
 
                 <div class="tab-pane fade show active profile-overview" id="profile-overview">
 
-                  <h5 class="card-title">Profile Details</h5>
+                  <h5 class="card-title">Detalhes do perfil</h5>
 
                   <div class="row">
                     <div class="col-lg-3 col-md-4 label ">Nome completo</div>
@@ -187,7 +273,7 @@
                   <!-- Profile Edit Form -->
                   <form action="update_profile.php" method="POST">
                     <div class="row mb-3">
-                      <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Image de perfil</label>
+                      <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Imagem de perfil</label>
                       <div class="col-md-8 col-lg-9">
                         <img src="assets/img/profile-img.jpg" alt="Profile">
                         <div class="pt-2">
@@ -207,7 +293,7 @@
                     <div class="row mb-3">
                       <label for="company" class="col-md-4 col-lg-3 col-form-label">Empresa</label>
                       <div class="col-md-8 col-lg-9">
-                        <input name="company" type="text" class="form-control" id="company" value="Lueilwitz, Wisoky and Leuschke">
+                        <input name="company" type="text" class="form-control" id="company" value="Sou + Tecnologia" disabled>
                       </div>
                     </div>
 
@@ -220,7 +306,7 @@
                     </div>
 
                     <div class="text-center">
-                      <button type="submit" class="btn btn-primary">Save Changes</button>
+                      <button type="submit" class="btn btn-primary">Salvar Alterações</button>
                     </div>
                   </form><!-- End Profile Edit Form -->
 
@@ -295,6 +381,16 @@
   <!-- Template Main JS File -->
   <script src="../assets/js/main.js"></script>
 
-</body>
+  <script>
+    <?php if ($updateMessage): ?>
+    var updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
+    updateModal.show();
+    <?php endif; ?>
 
+    <?php if ($passwordMessage): ?>
+    var passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
+    passwordModal.show();
+    <?php endif; ?>
+  </script>
+</body>
 </html>
