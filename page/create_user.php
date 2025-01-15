@@ -102,6 +102,9 @@ $conn->close();
         <li class="nav-item dropdown pe-3">
 
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+
+
+
             <span class="d-none d-md-block dropdown-toggle ps-2">
               <?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?>
             </span>
@@ -150,7 +153,7 @@ $conn->close();
 
     <li class="nav-item">
         <a class="nav-link " href="../index.php">
-        <i class="bi bi-grid"></i>
+        <i class="bi bi-journal-text"></i>
         <span>Gerador Script</span>
         </a>
     </li><!-- End Dashboard Nav -->

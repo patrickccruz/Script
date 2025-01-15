@@ -5,17 +5,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'];
     $email = $_POST['email'];
     $username = $_POST['username'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $password = password_hash($_POST['password'], PASSWORD_BCRYPT); // Criptografar a senha
 
-    $query = $conn->prepare("INSERT INTO users (name, email, username, password) VALUES (?, ?, ?, ?)");
-    $query->bind_param("ssss", $name, $email, $username, $password);
+    // Verificar se o email ou username já existem
+    $check_sql = "SELECT * FROM users WHERE email=? OR username=?";
+    $stmt = $conn->prepare($check_sql);
+    $stmt->bind_param("ss", $email, $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    if ($query->execute()) {
-        header('Location: user-login.php');
+    if ($result->num_rows > 0) {
+        echo "<script>alert('Erro: Email ou Nome de usuário já existem.');</script>";
     } else {
-        echo "Erro ao registrar.";
+        $query = $conn->prepare("INSERT INTO users (name, email, username, password) VALUES (?, ?, ?, ?)");
+        $query->bind_param("ssss", $name, $email, $username, $password);
+
+        if ($query->execute()) {
+            header('Location: user-login.php');
+        } else {
+            echo "Erro ao registrar: " . $query->error;
+        }
     }
+    $stmt->close();
 }
+$conn->close();
 ?>
 
 <!DOCTYPE html>

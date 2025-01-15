@@ -5,17 +5,19 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Gerenciar Usuários</title>
+  <title>Gerador de Script</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
   <!-- Favicons -->
-  <link href="../assets/img/favicon.png" rel="icon">
-  <link href="../assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+  <link href="../assets/img/Icon geral.png" rel="icon">
+  <link href="../assets/img/Icon geral.png" rel="apple-touch-icon">
 
   <!-- Google Fonts -->
   <link href="https://fonts.gstatic.com" rel="preconnect">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i"
+    rel="stylesheet">
 
   <!-- Vendor CSS Files -->
   <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -28,7 +30,13 @@
 
   <!-- Template Main CSS File -->
   <link href="../assets/css/style.css" rel="stylesheet">
-
+  <style>
+    :focus {
+      border-color: #1bd81b !important; /* Use !important para sobrescrever */
+      box-shadow: 0 0 5px rgb(7, 228, 25) !important;
+      outline: none !important;
+    }
+  </style>
 </head>
 
 <body>
@@ -49,11 +57,17 @@
     }
   ?>
 
+<script>
+  // Armazenar o nome e o ID do usuário logado na sessionStorage
+  sessionStorage.setItem('nomeUsuario', '<?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?>');
+  sessionStorage.setItem('idUsuario', '<?php echo htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8'); ?>');
+</script>
+
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-      <a href="./index.php" class="logo d-flex align-items-center">
+      <a href="../index.php" class="logo d-flex align-items-center">
         <img src="../assets/img/Icon geral.png" alt="">
         <span class="d-none d-lg-block">Script</span>
       </a>
@@ -82,14 +96,16 @@
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="../page/profile.php">
+              <a class="dropdown-item d-flex align-items-center" href="./profile.php">
                 <i class="bi bi-person"></i>
                 <span>Meu Perfil</span>
               </a>
             </li>
             <li>
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="page/logout.php">
+              <hr class="dropdown-divider">
+            </li>
+
+              <a class="dropdown-item d-flex align-items-center" href="logout.php">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Deslogar</span>
               </a>
@@ -105,95 +121,89 @@
   <!-- ======= Sidebar ======= -->
   <aside id="sidebar" class="sidebar">
 
-<ul class="sidebar-nav" id="sidebar-nav">
+    <ul class="sidebar-nav" id="sidebar-nav">
 
-  <li class="nav-item">
-    <a class="nav-link " href="../index.php">
-      <i class="bi bi-journal-text"></i>
-      <span>Gerador Script</span>
-    </a>
-  </li><!-- End Dashboard Nav -->
-  <li class="nav-item">
-        <a class="nav-link" href="../page/reembolso.php">
+      <li class="nav-item">
+        <a class="nav-link " href="../index.php">
+          <i class="bi bi-journal-text"></i>
+          <span>Gerador Script</span>
+        </a>
+        <a class="nav-link " href="reembolso.php">
           <i class="bx bx-money"></i>
           <span>Solicitação de reembolso</span>
         </a>
-      </li><!-- End Reembolso Nav -->
-</ul>
-</aside><!-- End Sidebar-->
+      </li><!-- End Dashboard Nav -->
+    </ul>
+  </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
-
-    <div class="pagetitle">
-      <h1>Gerenciar Usuários</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.php">Inicial</a></li>
-          <li class="breadcrumb-item">Administração</li>
-          <li class="breadcrumb-item active">Gerenciar Usuários</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
     <section class="section">
       <div class="row">
         <div class="col-lg-12">
-
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Lista de Usuários</h5>
-              <a href="create_user.php" class="btn btn-success mb-3">Criar Novo Usuário</a>
-              <!-- Table with stripped rows -->
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php
-                  // Conexão com o banco de dados
-                  include '../db.php';
 
-                  if (!isset($conn) || !$conn) {
-                    die("Falha na conexão: " . mysqli_connect_error());
-                  }
+              <form id="scriptForm" enctype="multipart/form-data">
+                <!-- Data do Chamado -->
+                <div class="form-floating mb-3">
+                  <input type="date" class="form-control" id="dataChamado" oninput="infoGeral()">
+                  <label for="dataChamado">Data do chamado:</label>
+                </div>
 
-                  $sql = "SELECT id, name, email FROM users";
-                  $result = $conn->query($sql);
+                <!-- Número do Chamado -->
+                <div class="form-floating mb-3">
+                  <input type="number" class="form-control" id="numeroChamado" oninput="infoGeral()">
+                  <label for="numeroChamado">Número do chamado:</label>
+                </div>
 
-                  if ($result->num_rows > 0) {
-                    while($row = $result->fetch_assoc()) {
-                      echo "<tr>";
-                      echo "<th scope='row'>" . htmlspecialchars($row['id']) . "</th>";
-                      echo "<td>" . htmlspecialchars($row['name']) . "</td>";
-                      echo "<td>" . htmlspecialchars($row['email']) . "</td>";
-                      echo "<td>
-                              <a href='edit_user.php?id=" . htmlspecialchars($row['id']) . "' class='btn btn-primary btn-sm'>Editar</a>
-                              <a href='delete_user.php?id=" . htmlspecialchars($row['id']) . "' class='btn btn-danger btn-sm'>Excluir</a>
-                            </td>";
-                      echo "</tr>";
-                    }
-                  } else {
-                    echo "<tr><td colspan='4'>Nenhum usuário encontrado</td></tr>";
-                  }
-                  $conn->close();
-                  ?>
-                </tbody>
-              </table>
-              <!-- End Table with stripped rows -->
+
+                <!-- Informações Adicionais -->
+                <div class="form-floating mb-3">
+                  <textarea class="form-control" id="informacoesAdicionais" style="height: 250px"
+                    oninput="infoGeral()"></textarea>
+                  <label for="informacoesAdicionais">Breve descrição do chamado:</label>
+                </div>
+
+                <!-- Upload de Arquivo -->
+                <div class="form-floating mb-3">
+                  <input type="file" class="form-control" id="arquivo" name="arquivos[]" accept=".pdf,image/*,video/*" multiple>
+                  <label for="arquivo">Anexar Arquivos (PDF, Imagem, Vídeo):</label>
+                </div>
+
+                <!-- Ações -->
+                <div class="mb-3">
+                  <button type="button" class="btn btn-outline-primary" id="enviarDiscord">Enviar para Discord</button>
+                  <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
+                </div>
+              </form>
+
+              <!-- Modal -->
+              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="exampleModalLabel">Texto Copiado</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p id="geralResp0"></p>
+                      <p id="geralResp1"></p>
+                      <p id="geralResp2"></p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
             </div>
           </div>
-
         </div>
       </div>
     </section>
-
-  </main><!-- End #main -->
+  </main>
 
 
   <!-- ======= Footer ======= -->

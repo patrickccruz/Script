@@ -7,7 +7,27 @@ CREATE TABLE IF NOT EXISTS users (
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
   username VARCHAR(255) NOT NULL,
-  password VARCHAR(255) NOT NULL -- A senha deve ser criptografada antes de ser inserida aqui
+  password VARCHAR(255) NOT NULL, -- A senha deve ser criptografada antes de ser inserida aqui
+  profile_image VARCHAR(255) -- Adiciona a coluna para armazenar o caminho da imagem de perfil
+);
+
+CREATE TABLE IF NOT EXISTS reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  data_chamado DATE NOT NULL,
+  numero_chamado INT NOT NULL,
+  cliente VARCHAR(255) NOT NULL,
+  nome_informante VARCHAR(255) NOT NULL,
+  quantidade_patrimonios INT NOT NULL,
+  km_inicial INT NOT NULL,
+  km_final INT NOT NULL,
+  hora_chegada TIME NOT NULL,
+  hora_saida TIME NOT NULL,
+  endereco_partida VARCHAR(255) NOT NULL,
+  endereco_chegada VARCHAR(255) NOT NULL,
+  informacoes_adicionais TEXT,
+  arquivo_path VARCHAR(255),
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 DELIMITER //
@@ -16,7 +36,8 @@ CREATE TRIGGER before_insert_users
 BEFORE INSERT ON users
 FOR EACH ROW
 BEGIN
-  SET NEW.password = bcrypt(NEW.password);
+  -- Remover a linha que usa bcrypt
+  -- SET NEW.password = bcrypt(NEW.password);
 END; //
 
 DELIMITER ;

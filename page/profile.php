@@ -25,9 +25,10 @@
   <link href="../assets/vendor/quill/quill.bubble.css" rel="stylesheet">
   <link href="../assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="../assets/vendor/simple-datatables/style.css" rel="stylesheet">
-
   <!-- Template Main CSS File -->
   <link href="../assets/css/style.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.css">
+<script src="https://unpkg.com/cropperjs"></script>
 
 </head>
 
@@ -45,7 +46,7 @@
     // Buscar o nome do usuário pelo ID que está no banco de dados
     if (isset($_SESSION['user']['id'])) {
         $userId = $_SESSION['user']['id'];
-        $stmt = $conn->prepare("SELECT name, username, email FROM users WHERE id = ?");
+        $stmt = $conn->prepare("SELECT name, username, email, profile_image FROM users WHERE id = ?");
         if ($stmt) {
             $stmt->bind_param("i", $userId);
             $stmt->execute();
@@ -159,19 +160,6 @@
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="settings.php">
-                <i class="bi bi-gear"></i>
-                <span>Configuração de conta</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
               <a class="dropdown-item d-flex align-items-center" href="logout.php">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Deslogar</span>
@@ -193,7 +181,7 @@
 
   <li class="nav-item">
     <a class="nav-link " href="../index.php">
-      <i class="bi bi-grid"></i>
+      <i class="bi bi-journal-text"></i>
       <span>Gerador Script</span>
     </a>
   </li><!-- End Dashboard Nav -->
@@ -221,8 +209,7 @@
 
           <div class="card">
             <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-
-              <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle">
+              <img src="<?php echo htmlspecialchars($user['profile_image'] ? '../uploads/' . $user['profile_image'] : '../assets/img/sem_foto.png'); ?>" alt="Profile">
               <h2><?php echo htmlspecialchars($user['name']); ?></h2>
             </div>
           </div>
@@ -271,14 +258,15 @@
                 <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
 
                   <!-- Profile Edit Form -->
-                  <form action="update_profile.php" method="POST">
+                  <form action="upload_profile_image.php" method="POST" enctype="multipart/form-data">
                     <div class="row mb-3">
                       <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Imagem de perfil</label>
                       <div class="col-md-8 col-lg-9">
-                        <img src="assets/img/profile-img.jpg" alt="Profile">
+                        <img id="profileImagePreview" src="<?php echo htmlspecialchars($user['profile_image'] ? '../uploads/' . $user['profile_image'] : '../assets/img/sem_foto.png'); ?>" alt="Profile">
                         <div class="pt-2">
-                          <a href="#" class="btn btn-primary btn-sm" title="Upload new profile image"><i class="bi bi-upload"></i></a>
-                          <a href="#" class="btn btn-danger btn-sm" title="Remove my profile image"><i class="bi bi-trash"></i></a>
+                          <input type="file" name="profile_image" class="form-control" id="profileImageInput">
+                          <button type="submit" class="btn btn-primary btn-sm" title="Upload new profile image"><i class="bi bi-upload"></i></button>
+                          <a href="remove_profile_image.php" class="btn btn-danger btn-sm" title="Remove my profile image"><i class="bi bi-trash"></i></a>
                         </div>
                       </div>
                     </div>
@@ -392,5 +380,8 @@
     passwordModal.show();
     <?php endif; ?>
   </script>
+
+  
+
 </body>
 </html>

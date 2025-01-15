@@ -55,6 +55,48 @@
     } else {
       $user = ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
     }
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+      $dataChamado = $_POST['dataChamado'];
+      $numeroChamado = $_POST['numeroChamado'];
+      $cliente = $_POST['cliente'];
+      $nomeInformante = $_POST['nomeInformante'];
+      $quantidadePatrimonios = $_POST['quantidadePatrimonios'];
+      $kmInicial = $_POST['kmInicial'];
+      $kmFinal = $_POST['kmFinal'];
+      $horaChegada = $_POST['horaChegada'];
+      $horaSaida = $_POST['horaSaida'];
+      $enderecoPartida = $_POST['enderecoPartida'];
+      $enderecoChegada = $_POST['enderecoChegada'];
+      $informacoesAdicionais = $_POST['informacoesAdicionais'];
+      $arquivoPath = '';
+
+      if (isset($_FILES['arquivo']) && $_FILES['arquivo']['error'] == UPLOAD_ERR_OK) {
+        $uploadDir = 'uploads/';
+        if (!is_dir($uploadDir)) {
+          mkdir($uploadDir, 0777, true);
+        }
+        $arquivoPath = $uploadDir . basename($_FILES['arquivo']['name']);
+        move_uploaded_file($_FILES['arquivo']['tmp_name'], $arquivoPath);
+      }
+
+      $conn = new mysqli('localhost', 'root', '', 'sou_digital');
+      if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+      }
+
+      $stmt = $conn->prepare("INSERT INTO reports (user_id, data_chamado, numero_chamado, cliente, nome_informante, quantidade_patrimonios, km_inicial, km_final, hora_chegada, hora_saida, endereco_partida, endereco_chegada, informacoes_adicionais, arquivo_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+      $stmt->bind_param("issssiiissssss", $user['id'], $dataChamado, $numeroChamado, $cliente, $nomeInformante, $quantidadePatrimonios, $kmInicial, $kmFinal, $horaChegada, $horaSaida, $enderecoPartida, $enderecoChegada, $informacoesAdicionais, $arquivoPath);
+
+      if ($stmt->execute()) {
+        echo "Dados salvos com sucesso!";
+      } else {
+        echo "Erro ao salvar os dados: " . $stmt->error;
+      }
+
+      $stmt->close();
+      $conn->close();
+    }
   ?>
 
 <script>
@@ -67,8 +109,8 @@
   <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-      <a href="index.php" class="logo d-flex align-items-center">
-        <img src="assets/img/Icon geral.png" alt="">
+      <a href="./index.php" class="logo d-flex align-items-center">
+        <img src="./assets/img/Icon geral.png" alt="">
         <span class="d-none d-lg-block">Script</span>
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
@@ -80,6 +122,7 @@
         <li class="nav-item dropdown pe-3">
 
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+            
             <span class="d-none d-md-block dropdown-toggle ps-2">
               <?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?>
             </span>
@@ -127,12 +170,28 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="index.html">
-          <i class="bi bi-grid"></i>
-          <span>Gerador Script</span>
+        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-menu-button-wide"></i><span>Components</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-      </li><!-- End Dashboard Nav -->
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a class="nav-link" href="index.php">
+              <i class="bi bi-journal-text"></i>
+              <span>Gerador Script</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End Components Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link" href="page/reembolso.php">
+          <i class="bx bx-money"></i>
+          <span>Solicitação de reembolso</span>
+        </a>
+      </li><!-- End Reembolso Nav -->
+
     </ul>
+
   </aside><!-- End Sidebar-->
 
   <main id="main" class="main">
@@ -141,72 +200,79 @@
         <div class="col-lg-12">
           <div class="card">
             <div class="card-body">
-
-              <form id="scriptForm" enctype="multipart/form-data">
+            <div class="pagetitle">
+                <h1>Relatorio de Atendimento</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.php">Inicial</a></li>
+                  </ol>
+                </nav>
+              </div><!-- End Page Title -->
+              <form id="scriptForm" enctype="multipart/form-data" method="POST">
                 <!-- Data do Chamado -->
                 <div class="form-floating mb-3">
-                  <input type="date" class="form-control" id="dataChamado" oninput="infoGeral()">
+                  <input type="date" class="form-control" id="dataChamado" name="dataChamado" oninput="infoGeral()">
                   <label for="dataChamado">Data do chamado:</label>
                 </div>
 
                 <!-- Número do Chamado -->
                 <div class="form-floating mb-3">
-                  <input type="number" class="form-control" id="numeroChamado" oninput="infoGeral()">
+                  <input type="number" class="form-control" id="numeroChamado" name="numeroChamado" oninput="infoGeral()">
                   <label for="numeroChamado">Número do chamado:</label>
                 </div>
 
                 <!-- Cliente -->
                 <div class="form-floating mb-3">
-                  <input type="text" class="form-control" id="cliente" oninput="infoGeral()">
+                  <input type="text" class="form-control" id="cliente" name="cliente" oninput="infoGeral()">
                   <label for="cliente">Cliente:</label>
                 </div>
 
                 <!-- Nome de quem informou o chamado -->
                 <div class="form-floating mb-3">
-                  <input type="text" class="form-control" id="nomeInformante" oninput="infoGeral()">
+                  <input type="text" class="form-control" id="nomeInformante" name="nomeInformante" oninput="infoGeral()">
                   <label for="nomeInformante">Nome de quem informou o chamado:</label>
                 </div>
 
 
                 <!-- Quantidade de Patrimônios Tratados -->
                 <div class="form-floating mb-3">
-                  <input type="number" class="form-control" id="quantidadePatrimonios" oninput="infoGeral()">
+                  <input type="number" class="form-control" id="quantidadePatrimonios" name="quantidadePatrimonios" oninput="infoGeral()">
                   <label for="quantidadePatrimonios">Quantidade de patrimônios tratados:</label>
                 </div>
 
                 <!-- KM Inicial e Final -->
                 <div class="form-floating mb-3">
-                  <input type="number" class="form-control" id="kmInicial" oninput="infoGeral()">
+                  <input type="number" class="form-control" id="kmInicial" name="kmInicial" oninput="infoGeral()">
                   <label for="kmInicial">KM inicial:</label>
                 </div>
                 <div class="form-floating mb-3">
-                  <input type="number" class="form-control" id="kmFinal" oninput="infoGeral()">
+                  <input type="number" class="form-control" id="kmFinal" name="kmFinal" oninput="infoGeral()">
                   <label for="kmFinal">KM final:</label>
                 </div>
 
                 <!-- Horários de Chegada e Saída -->
                 <div class="form-floating mb-3">
-                  <input type="time" class="form-control" id="horaChegada" oninput="infoGeral()">
+                  <input type="time" class="form-control" id="horaChegada" name="horaChegada" oninput="infoGeral()">
                   <label for="horaChegada">Horário de chegada no chamado:</label>
                 </div>
                 <div class="form-floating mb-3">
-                  <input type="time" class="form-control" id="horaSaida" oninput="infoGeral()">
+                  <input type="time" class="form-control" id="horaSaida" name="horaSaida" oninput="infoGeral()">
                   <label for="horaSaida">Horário de saída do chamado:</label>
                 </div>
 
                 <!-- Endereços -->
                 <div class="form-floating mb-3">
-                  <input type="text" class="form-control" id="enderecoPartida" oninput="infoGeral()">
+                  <input type="text" class="form-control" id="enderecoPartida" name="enderecoPartida" oninput="infoGeral()">
                   <label for="enderecoPartida">Endereço de partida:</label>
                 </div>
                 <div class="form-floating mb-3">
-                  <input type="text" class="form-control" id="enderecoChegada" oninput="infoGeral()">
+                  <input type="text" class="form-control" id="enderecoChegada" name="enderecoChegada" oninput="infoGeral()">
                   <label for="enderecoChegada">Endereço de chegada:</label>
                 </div>
 
                 <!-- Informações Adicionais -->
                 <div class="form-floating mb-3">
-                  <textarea class="form-control" id="informacoesAdicionais" style="height: 250px"
+                  <textarea class="form-control" id="informacoesAdicionais" name="informacoesAdicionais" style="height: 250px"
                     oninput="infoGeral()"></textarea>
                   <label for="informacoesAdicionais">Breve descrição do chamado:</label>
                 </div>
@@ -219,7 +285,7 @@
 
                 <!-- Ações -->
                 <div class="mb-3">
-                  <button type="button" class="btn btn-outline-primary" id="enviarDiscord">Enviar para Discord</button>
+                  <button type="submit" class="btn btn-outline-primary" id="enviarDiscord">Enviar para Discord</button>
                   <button type="button" class="btn btn-outline-primary" onclick="copResp2()" data-bs-toggle="modal"
                     data-bs-target="#exampleModal3">Copiar Texto</button>
                   <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
