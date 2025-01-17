@@ -258,19 +258,24 @@
                 <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
 
                   <!-- Profile Edit Form -->
-                  <form action="upload_profile_image.php" method="POST" enctype="multipart/form-data">
+                  <!-- Formulário para upload de imagem -->
+                  <form action="upload_profile_image.php" method="POST" enctype="multipart/form-data" class="mb-3">
                     <div class="row mb-3">
                       <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Imagem de perfil</label>
                       <div class="col-md-8 col-lg-9">
                         <img id="profileImagePreview" src="<?php echo htmlspecialchars($user['profile_image'] ? '../uploads/' . $user['profile_image'] : '../assets/img/sem_foto.png'); ?>" alt="Profile">
                         <div class="pt-2">
-                          <input type="file" name="profile_image" class="form-control" id="profileImageInput">
-                          <button type="submit" class="btn btn-primary btn-sm" title="Upload new profile image"><i class="bi bi-upload"></i></button>
+                          <input type="file" name="profile_image" class="form-control d-none" id="profileImageInput">
+                          <button type="button" onclick="document.getElementById('profileImageInput').click();" class="btn btn-primary btn-sm" title="Upload new profile image"><i class="bi bi-upload"></i></button>
+                          <button type="submit" id="submitImage" class="btn btn-success btn-sm d-none" title="Save profile image"><i class="bi bi-check"></i></button>
                           <a href="remove_profile_image.php" class="btn btn-danger btn-sm" title="Remove my profile image"><i class="bi bi-trash"></i></a>
                         </div>
                       </div>
                     </div>
+                  </form>
 
+                  <!-- Formulário para outras informações do perfil -->
+                  <form action="update_profile.php" method="POST">
                     <div class="row mb-3">
                       <label for="fullName" class="col-md-4 col-lg-3 col-form-label">Nome Completo</label>
                       <div class="col-md-8 col-lg-9">
@@ -284,7 +289,6 @@
                         <input name="company" type="text" class="form-control" id="company" value="Sou + Tecnologia" disabled>
                       </div>
                     </div>
-
 
                     <div class="row mb-3">
                       <label for="Email" class="col-md-4 col-lg-3 col-form-label">Email</label>
@@ -379,6 +383,21 @@
     var passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
     passwordModal.show();
     <?php endif; ?>
+
+    // Script para gerenciar o upload de imagem
+    document.getElementById('profileImageInput').addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        // Mostra o botão de salvar quando uma imagem é selecionada
+        document.getElementById('submitImage').classList.remove('d-none');
+        
+        // Preview da imagem
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('profileImagePreview').src = e.target.result;
+        }
+        reader.readAsDataURL(this.files[0]);
+      }
+    });
   </script>
 
   

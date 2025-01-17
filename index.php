@@ -208,7 +208,7 @@
                   </ol>
                 </nav>
               </div><!-- End Page Title -->
-              <form id="scriptForm" enctype="multipart/form-data" method="POST">
+              <form id="scriptForm" enctype="multipart/form-data">
                 <!-- Data do Chamado -->
                 <div class="form-floating mb-3">
                   <input type="date" class="form-control" id="dataChamado" name="dataChamado" oninput="infoGeral()">
@@ -285,9 +285,7 @@
 
                 <!-- Ações -->
                 <div class="mb-3">
-                  <button type="submit" class="btn btn-outline-primary" id="enviarDiscord">Enviar para Discord</button>
-                  <button type="button" class="btn btn-outline-primary" onclick="copResp2()" data-bs-toggle="modal"
-                    data-bs-target="#exampleModal3">Copiar Texto</button>
+                  <button type="button" class="btn btn-outline-primary" id="salvarTudo">Salvar e Enviar</button>
                   <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
                 </div>
               </form>
@@ -342,6 +340,98 @@
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+
+  <script>
+  // Função para mostrar modal de sucesso
+  function mostrarSucesso(mensagem) {
+      document.getElementById('mensagemSucesso').textContent = mensagem;
+      const modal = new bootstrap.Modal(document.getElementById('sucessoModal'));
+      modal.show();
+  }
+
+  // Função para mostrar modal de erro
+  function mostrarErro(mensagem) {
+      document.getElementById('mensagemErro').textContent = mensagem;
+      const modal = new bootstrap.Modal(document.getElementById('erroModal'));
+      modal.show();
+  }
+
+  // Evento do botão Salvar no Banco
+  document.getElementById('salvarBanco').addEventListener('click', function(e) {
+      e.preventDefault();
+      const formData = new FormData(document.getElementById('scriptForm'));
+      
+      fetch('salvar_dados.php', {
+          method: 'POST',
+          body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+          if(data.includes("sucesso")) {
+              mostrarSucesso("Dados salvos com sucesso no banco de dados!");
+          } else {
+              mostrarErro("Erro ao salvar os dados: " + data);
+          }
+      })
+      .catch(error => {
+          console.error('Erro:', error);
+          mostrarErro("Erro ao salvar os dados. Por favor, tente novamente.");
+      });
+  });
+
+  // Evento do botão Enviar para Discord
+  document.getElementById('enviarDiscord').addEventListener('click', function(e) {
+      e.preventDefault();
+      const formData = JSON.parse(localStorage.getItem("formData"));
+      if (formData) {
+          enviarParaDiscord()
+              .then(() => {
+                  mostrarSucesso("Dados enviados com sucesso para o Discord!");
+              })
+              .catch(error => {
+                  mostrarErro("Erro ao enviar para o Discord: " + error.message);
+              });
+      } else {
+          mostrarErro("Nenhum dado encontrado para enviar ao Discord.");
+      }
+  });
+  </script>
+
+  <!-- Modal de Sucesso -->
+  <div class="modal fade" id="sucessoModal" tabindex="-1" aria-labelledby="sucessoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="sucessoModalLabel">Sucesso!</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p id="mensagemSucesso"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Erro -->
+  <div class="modal fade" id="erroModal" tabindex="-1" aria-labelledby="erroModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="erroModalLabel">Erro!</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p id="mensagemErro"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </body>
 

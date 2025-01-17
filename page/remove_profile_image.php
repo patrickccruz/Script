@@ -2,22 +2,21 @@
 session_start();
 include '../db.php';
 
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
-    header("Location: user-login.php");
-    exit;
-}
-
 $userId = $_SESSION['user']['id'];
-$stmt = $conn->prepare("UPDATE users SET profile_image = NULL WHERE id = ?");
-if ($stmt) {
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $stmt->close();
-    $_SESSION['update_success'] = "Imagem de perfil removida com sucesso.";
-} else {
-    $_SESSION['update_success'] = "Erro ao remover a imagem de perfil: " . $conn->error;
-}
 
+// Remove a imagem do perfil no banco de dados
+$stmt = $conn->prepare("UPDATE users SET profile_image = NULL WHERE id = ?");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+
+// Opcional: Remover o arquivo do servidor
+// $user = $stmt->fetch_assoc();
+// $filePath = '../uploads/' . $user['profile_image'];
+// if (file_exists($filePath)) {
+//     unlink($filePath);
+// }
+
+$_SESSION['update_success'] = "Imagem de perfil removida com sucesso.";
 header("Location: profile.php");
 exit;
 ?>

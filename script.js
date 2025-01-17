@@ -98,71 +98,120 @@ function salvarDadosFormulario() {
   
   // Função para enviar os dados do formulário para o webhook do Discord
   function enviarParaDiscord() {
-    console.log("Enviando dados para o Discord...");
-    const formData = JSON.parse(localStorage.getItem("formData"));
-    const nomeUsuario = sessionStorage.getItem("nomeUsuario") || "Usuário desconhecido"; // Corrigido para pegar da sessão
-    const arquivoInput = document.getElementById("arquivo");
-    const arquivo = arquivoInput.files[0];
-  
-    if (formData) {
-      const embed = {
-        title: "Scrit de atendimento",
-        fields: [
-          { name: "Nome do tecnico", value: nomeUsuario, inline: false },
-          { name: "Data do chamado", value: formData.dataChamado || "N/A", inline: false },
-          { name: "Número do chamado", value: formData.numeroChamado || "N/A", inline: false },
-          { name: "Cliente", value: formData.cliente || "N/A", inline: false },
-          { name: "Nome do informante", value: formData.nomeInformante || "N/A", inline: false },
-          { name: "Quantidade de patrimônios", value: formData.quantidadePatrimonios || "N/A", inline: false },
-          { name: "KM inicial", value: formData.kmInicial || "N/A", inline: false },
-          { name: "KM final", value: formData.kmFinal || "N/A", inline: false },
-          { name: "Hora de chegada", value: formData.horaChegada || "N/A", inline: false },
-          { name: "Hora de saída", value: formData.horaSaida || "N/A", inline: true },
-          { name: "Endereço de partida", value: formData.enderecoPartida || "N/A", inline: false },
-          { name: "Endereço de chegada", value: formData.enderecoChegada || "N/A", inline: false },
-          { name: "Informações adicionais", value: formData.informacoesAdicionais || "N/A", inline: false },
-        ],
-        color: 3066993, // Código de cor em decimal
-        footer: {
-          text: 'Atenciosamente Sou + Tecnologia',
-          icon_url: 'https://i.imgur.com/sOsHaID.png'
-        },
-        timestamp: new Date().toISOString()
-      };
-  
-      const webhookURL = "https://discord.com/api/webhooks/1326597466392498237/MdUd68kvPG4eQhiy7KB4KY0WiyzQQBSmsUwu4vOy19OKci0W5CihB8YTBh3_MJYmGyN2";
-      const formDataToSend = new FormData();
-      formDataToSend.append("payload_json", JSON.stringify({ embeds: [embed] }));
-      if (arquivo) {
-        formDataToSend.append("file", arquivo);
-      }
-  
-      fetch(webhookURL, {
-        method: "POST",
-        body: formDataToSend
-      })
-      .then(response => {
-        if (response.ok) {
-          console.log("Dados enviados para o Discord com sucesso.");
+    return new Promise((resolve, reject) => {
+        console.log("Enviando dados para o Discord...");
+        const formData = JSON.parse(localStorage.getItem("formData"));
+        const nomeUsuario = sessionStorage.getItem("nomeUsuario") || "Usuário desconhecido";
+        const arquivoInput = document.getElementById("arquivo");
+        const arquivo = arquivoInput.files[0];
+
+        if (formData) {
+            const embed = {
+                title: "Script de atendimento",
+                fields: [
+                    { name: "Nome do técnico", value: nomeUsuario, inline: false },
+                    { name: "Data do chamado", value: formData.dataChamado || "N/A", inline: false },
+                    { name: "Número do chamado", value: formData.numeroChamado || "N/A", inline: false },
+                    { name: "Cliente", value: formData.cliente || "N/A", inline: false },
+                    { name: "Nome do informante", value: formData.nomeInformante || "N/A", inline: false },
+                    { name: "Quantidade de patrimônios", value: formData.quantidadePatrimonios || "N/A", inline: false },
+                    { name: "KM inicial", value: formData.kmInicial || "N/A", inline: false },
+                    { name: "KM final", value: formData.kmFinal || "N/A", inline: false },
+                    { name: "Hora de chegada", value: formData.horaChegada || "N/A", inline: false },
+                    { name: "Hora de saída", value: formData.horaSaida || "N/A", inline: true },
+                    { name: "Endereço de partida", value: formData.enderecoPartida || "N/A", inline: false },
+                    { name: "Endereço de chegada", value: formData.enderecoChegada || "N/A", inline: false },
+                    { name: "Informações adicionais", value: formData.informacoesAdicionais || "N/A", inline: false },
+                ],
+                color: 3066993,
+                footer: {
+                    text: 'Atenciosamente Sou + Tecnologia',
+                    icon_url: 'https://i.imgur.com/sOsHaID.png'
+                },
+                timestamp: new Date().toISOString()
+            };
+
+            const webhookURL = "https://discord.com/api/webhooks/1326597466392498237/MdUd68kvPG4eQhiy7KB4KY0WiyzQQBSmsUwu4vOy19OKci0W5CihB8YTBh3_MJYmGyN2";
+            const formDataToSend = new FormData();
+
+            if (arquivo) {
+                formDataToSend.append("file", arquivo, arquivo.name);
+            }
+
+            formDataToSend.append("payload_json", JSON.stringify({
+                embeds: [embed]
+            }));
+
+            fetch(webhookURL, {
+                method: "POST",
+                body: formDataToSend
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log("Dados enviados para o Discord com sucesso.");
+                    resolve();
+                } else {
+                    reject(new Error("Erro ao enviar dados para o Discord"));
+                }
+            })
+            .catch(error => {
+                console.error("Erro ao enviar dados para o Discord:", error);
+                reject(error);
+            });
         } else {
-          console.error("Erro ao enviar dados para o Discord:", response.statusText);
+            reject(new Error("Nenhum dado encontrado no localStorage"));
         }
-      })
-      .catch(error => console.error("Erro ao enviar dados para o Discord:", error));
-    } else {
-      console.error("Nenhum dado encontrado no localStorage.");
+    });
+  }
+  
+  // Função que combina salvar no banco e enviar para o Discord
+  async function salvarEEnviar() {
+    try {
+        // Primeiro salva no banco
+        const formData = new FormData(document.getElementById('scriptForm'));
+        const response = await fetch('salvar_dados.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.text();
+        
+        if (!data.includes("sucesso")) {
+            throw new Error(data);
+        }
+
+        // Se salvou no banco com sucesso, envia para o Discord
+        await enviarParaDiscord();
+
+        // Se ambas as operações foram bem-sucedidas, mostra mensagem de sucesso
+        mostrarSucesso("Dados salvos no banco e enviados para o Discord com sucesso!");
+
+    } catch (error) {
+        console.error('Erro:', error);
+        mostrarErro(`Erro durante o processo: ${error.message}`);
     }
   }
   
   // Carregar os dados do formulário ao carregar a página
   window.onload = carregarDadosFormulario;
   
-  // Adicionar evento de clique ao botão de enviar
-  document.getElementById("enviarDiscord").addEventListener("click", function() {
-    infoGeral();
-    enviarParaDiscord();
+  // Remover os event listeners antigos e adicionar o novo
+  document.addEventListener('DOMContentLoaded', function() {
+    // Remove os botões antigos se ainda existirem
+    const btnSalvarBanco = document.getElementById('salvarBanco');
+    const btnEnviarDiscord = document.getElementById('enviarDiscord');
+    
+    if (btnSalvarBanco) {
+        btnSalvarBanco.remove();
+    }
+    if (btnEnviarDiscord) {
+        btnEnviarDiscord.remove();
+    }
+
+    // Adiciona o event listener para o novo botão
+    document.getElementById('salvarTudo').addEventListener('click', function(e) {
+        e.preventDefault();
+        infoGeral(); // Atualiza as informações antes de salvar
+        salvarEEnviar();
+    });
   });
-
-  
-
-  Ola6
