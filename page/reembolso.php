@@ -55,6 +55,54 @@
     } else {
       $user = ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
     }
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+      $dataChamado = $_POST['dataChamado'];
+      $numeroChamado = $_POST['numeroChamado'];
+      $informacoesAdicionais = $_POST['informacoesAdicionais'];
+      $arquivoPath = '';
+
+      // Processamento de múltiplos arquivos
+      if (isset($_FILES['arquivos'])) {
+        $uploadDir = '../uploads/';
+        if (!is_dir($uploadDir)) {
+          mkdir($uploadDir, 0777, true);
+        }
+        
+        $arquivoPaths = array();
+        $fileCount = count($_FILES['arquivos']['name']);
+        
+        for($i = 0; $i < $fileCount; $i++) {
+          if ($_FILES['arquivos']['error'][$i] == UPLOAD_ERR_OK) {
+            $fileName = basename($_FILES['arquivos']['name'][$i]);
+            $targetPath = $uploadDir . $fileName;
+            
+            if (move_uploaded_file($_FILES['arquivos']['tmp_name'][$i], $targetPath)) {
+              $arquivoPaths[] = $targetPath;
+            }
+          }
+        }
+        
+        $arquivoPath = implode(',', $arquivoPaths);
+      }
+
+      $conn = new mysqli('localhost', 'root', '', 'sou_digital');
+      if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+      }
+
+      $stmt = $conn->prepare("INSERT INTO reembolsos (user_id, data_chamado, numero_chamado, informacoes_adicionais, arquivo_path) VALUES (?, ?, ?, ?, ?)");
+      $stmt->bind_param("isiss", $user['id'], $dataChamado, $numeroChamado, $informacoesAdicionais, $arquivoPath);
+
+      if ($stmt->execute()) {
+        echo "Dados salvos com sucesso!";
+      } else {
+        echo "Erro ao salvar os dados: " . $stmt->error;
+      }
+
+      $stmt->close();
+      $conn->close();
+    }
   ?>
 
 <script>
@@ -132,6 +180,10 @@
           <i class="bx bx-money"></i>
           <span>Solicitação de reembolso</span>
         </a>
+        <a class="nav-link" href="view-reembolsos.php">
+          <i class="bx bx-list-ul"></i>
+          <span>Visualizar Reembolsos</span>
+        </a>
       </li><!-- End Dashboard Nav -->
     </ul>
   </aside><!-- End Sidebar-->
@@ -142,25 +194,32 @@
         <div class="col-lg-12">
           <div class="card">
             <div class="card-body">
+              <div class="pagetitle">
+                <h1>Solicitação de Reembolso</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="../index.php">Inicial</a></li>
+                    <li class="breadcrumb-item active">Reembolso</li>
+                  </ol>
+                </nav>
+              </div>
 
-              <form id="scriptForm" enctype="multipart/form-data">
+              <form id="scriptForm" enctype="multipart/form-data" method="POST">
                 <!-- Data do Chamado -->
                 <div class="form-floating mb-3">
-                  <input type="date" class="form-control" id="dataChamado" oninput="infoGeral()">
+                  <input type="date" class="form-control" id="dataChamado" name="dataChamado" required>
                   <label for="dataChamado">Data do chamado:</label>
                 </div>
 
                 <!-- Número do Chamado -->
                 <div class="form-floating mb-3">
-                  <input type="number" class="form-control" id="numeroChamado" oninput="infoGeral()">
+                  <input type="number" class="form-control" id="numeroChamado" name="numeroChamado" required>
                   <label for="numeroChamado">Número do chamado:</label>
                 </div>
 
-
                 <!-- Informações Adicionais -->
                 <div class="form-floating mb-3">
-                  <textarea class="form-control" id="informacoesAdicionais" style="height: 250px"
-                    oninput="infoGeral()"></textarea>
+                  <textarea class="form-control" id="informacoesAdicionais" name="informacoesAdicionais" style="height: 250px" required></textarea>
                   <label for="informacoesAdicionais">Breve descrição do chamado:</label>
                 </div>
 
@@ -172,27 +231,43 @@
 
                 <!-- Ações -->
                 <div class="mb-3">
+                  <button type="submit" class="btn btn-outline-primary" id="salvarTudo">Salvar e Enviar</button>
                   <button type="button" class="btn btn-outline-primary" id="enviarDiscord">Enviar para Discord</button>
-                  <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
+                  <button type="button" class="btn btn-outline-danger" onclick="limparFormulario()">Apagar Tudo</button>
                 </div>
               </form>
 
-              <!-- Modal -->
-              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog modal-xl">
+              <!-- Modal de Sucesso -->
+              <div class="modal fade" id="sucessoModal" tabindex="-1" aria-labelledby="sucessoModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
                   <div class="modal-content">
-                    <div class="modal-header">
-                      <h1 class="modal-title fs-5" id="exampleModalLabel">Texto Copiado</h1>
+                    <div class="modal-header bg-success text-white">
+                      <h5 class="modal-title" id="sucessoModalLabel">Sucesso!</h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                      <p id="geralResp0"></p>
-                      <p id="geralResp1"></p>
-                      <p id="geralResp2"></p>
+                      <p id="mensagemSucesso"></p>
                     </div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Fechar</button>
+                      <button type="button" class="btn btn-success" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Modal de Erro -->
+              <div class="modal fade" id="erroModal" tabindex="-1" aria-labelledby="erroModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                      <h5 class="modal-title" id="erroModalLabel">Erro!</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p id="mensagemErro"></p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
                     </div>
                   </div>
                 </div>
@@ -222,11 +297,156 @@
 
   <!-- Vendor JS Files -->
   <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="../script.js"></script>
   <script src="../assets/vendor/apexcharts/apexcharts.min.js"></script>
 
   <!-- Template Main JS File -->
   <script src="../assets/js/main.js"></script>
+
+  <script>
+  // Função para mostrar modal de sucesso
+  function mostrarSucesso(mensagem) {
+      document.getElementById('mensagemSucesso').textContent = mensagem;
+      const modal = new bootstrap.Modal(document.getElementById('sucessoModal'));
+      modal.show();
+  }
+
+  // Função para mostrar modal de erro
+  function mostrarErro(mensagem) {
+      document.getElementById('mensagemErro').textContent = mensagem;
+      const modal = new bootstrap.Modal(document.getElementById('erroModal'));
+      modal.show();
+  }
+
+  // Função para limpar o formulário
+  function limparFormulario() {
+      document.getElementById('scriptForm').reset();
+      mostrarSucesso('Formulário limpo com sucesso!');
+  }
+
+  // Função para enviar dados para o Discord
+  async function enviarParaDiscord(dados) {
+      const webhookUrl = 'https://discord.com/api/webhooks/1333406850187526184/vOEWFHFRY-I8Vs7A5M3CD71REU6fr60vChk_J7-C8-8eUM4DUnm2kMahjvLfajkpR3Xm';
+      
+      // Criar o FormData para enviar arquivos
+      const formData = new FormData();
+      
+      // Adicionar a mensagem como um campo JSON
+      const mensagem = {
+          content: 'Nova solicitação de reembolso',
+          embeds: [{
+              title: `Reembolso - Chamado #${dados.numeroChamado}`,
+              color: 0x00ff00,
+              fields: [
+                  {
+                      name: 'Data do Chamado',
+                      value: dados.dataChamado,
+                      inline: true
+                  },
+                  {
+                      name: 'Número do Chamado',
+                      value: dados.numeroChamado,
+                      inline: true
+                  },
+                  {
+                      name: 'Descrição',
+                      value: dados.informacoesAdicionais || 'Sem descrição',
+                      inline: false
+                  }
+              ],
+              timestamp: new Date().toISOString()
+          }]
+      };
+
+      // Adicionar os arquivos primeiro
+      const fileInput = document.getElementById('arquivo');
+      const files = fileInput.files;
+      
+      // Se não houver arquivos, envia apenas a mensagem
+      if (files.length === 0) {
+          const response = await fetch(webhookUrl, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(mensagem)
+          });
+
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Erro ao enviar mensagem para o Discord: ${errorText}`);
+          }
+          return response;
+      }
+
+      // Se houver arquivos, envia com FormData
+      formData.append('payload_json', JSON.stringify(mensagem));
+      
+      // Adiciona cada arquivo com o nome 'files[n]'
+      for (let i = 0; i < files.length; i++) {
+          formData.append(`files[${i}]`, files[i]);
+      }
+
+      try {
+          const response = await fetch(webhookUrl, {
+              method: 'POST',
+              body: formData
+          });
+
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Erro ao enviar mensagem para o Discord: ${errorText}`);
+          }
+
+          return response;
+      } catch (error) {
+          console.error('Erro ao enviar para o Discord:', error);
+          throw error;
+      }
+  }
+
+  // Evento do botão Enviar para Discord
+  document.getElementById('enviarDiscord').addEventListener('click', function(e) {
+      e.preventDefault();
+      const formData = new FormData(document.getElementById('scriptForm'));
+      const dados = {
+          dataChamado: formData.get('dataChamado'),
+          numeroChamado: formData.get('numeroChamado'),
+          informacoesAdicionais: formData.get('informacoesAdicionais')
+      };
+
+      enviarParaDiscord(dados)
+          .then(() => {
+              mostrarSucesso("Dados e arquivos enviados com sucesso para o Discord!");
+          })
+          .catch(error => {
+              mostrarErro(error.message);
+          });
+  });
+
+  // Manipular o envio do formulário
+  document.getElementById('scriptForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      
+      fetch(window.location.href, {
+          method: 'POST',
+          body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+          if(data.includes("sucesso")) {
+              mostrarSucesso("Dados salvos com sucesso no banco de dados!");
+              this.reset(); // Limpa o formulário
+          } else {
+              mostrarErro("Erro ao salvar os dados: " + data);
+          }
+      })
+      .catch(error => {
+          console.error('Erro:', error);
+          mostrarErro("Erro ao salvar os dados. Por favor, tente novamente.");
+      });
+  });
+  </script>
 
 </body>
 
