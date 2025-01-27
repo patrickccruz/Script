@@ -30,6 +30,17 @@ CREATE TABLE IF NOT EXISTS reports (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS reembolsos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  data_chamado DATE NOT NULL,
+  numero_chamado INT NOT NULL,
+  informacoes_adicionais TEXT,
+  arquivo_path VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 DELIMITER //
 
 CREATE TRIGGER before_insert_users
