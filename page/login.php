@@ -1,54 +1,92 @@
 <?php
 session_start();
-include '../db.php';
+require_once '../db.php';
+
+// Limpar sessão anterior se existir
+if (isset($_SESSION['loggedin'])) {
+    session_destroy();
+    session_start();
+}
+
+// Proteção contra força bruta
+if (!isset($_SESSION['login_attempts'])) {
+    $_SESSION['login_attempts'] = 0;
+    $_SESSION['last_attempt'] = time();
+}
+
+// Verificar tentativas de login
+if ($_SESSION['login_attempts'] >= 5) {
+    $time_passed = time() - $_SESSION['last_attempt'];
+    if ($time_passed < 300) { // 5 minutos de bloqueio
+        die("Muitas tentativas de login. Tente novamente em " . (300 - $time_passed) . " segundos.");
+    } else {
+        $_SESSION['login_attempts'] = 0;
+    }
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $username = $_POST['username'];
-  $password = $_POST['password'];
+    try {
+        // Validação básica
+        $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
+        $password = $_POST['password'];
 
-  // Verifique se a conexão com o banco de dados está funcionando
-  if ($conn->connect_error) {
-    die("Falha na conexão: " . $conn->connect_error);
-  }
+        if (empty($username) || empty($password)) {
+            throw new Exception("Todos os campos são obrigatórios");
+        }
 
-  // Lógica de autenticação real
-  $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
-  if ($stmt) {
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
+        // Verificar conexão com o banco
+        if ($conn->connect_error) {
+            throw new Exception("Erro de conexão com o banco de dados");
+        }
 
-    if ($user) {
-      if (password_verify($password, $user['password'])) {
-        $userId = $user['id'];
-        $userName = $user['name'];
-        $userUsername = $user['username'];
+        // Consulta preparada
+        $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
+        if (!$stmt) {
+            throw new Exception("Erro na preparação da consulta");
+        }
 
-        $_SESSION['loggedin'] = true;
-        $_SESSION['user'] = [
-            'id' => $userId,
-            'name' => $userName,
-            'username' => $userUsername
-        ];
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
 
-        // Log para informar o que está salvo na sessão
-        error_log("Usuário logado: " . print_r($_SESSION['user'], true));
+        if ($user && password_verify($password, $user['password'])) {
+            // Reset tentativas de login
+            $_SESSION['login_attempts'] = 0;
+            
+            // Configurar sessão
+            $_SESSION['loggedin'] = true;
+            $_SESSION['user'] = [
+                'id' => $user['id'],
+                'name' => $user['name'],
+                'username' => $user['username'],
+                'is_admin' => (bool)$user['is_admin']
+            ];
 
-        header("Location: ../index.php");
-        exit;
-      } else {
-        $_SESSION['login_error'] = 'Senha inválida.';
-      }
-    } else {
-      $_SESSION['login_error'] = 'Usuário não encontrado.';
+            // Registrar login bem-sucedido
+            $ip = $_SERVER['REMOTE_ADDR'];
+            error_log("Login bem-sucedido: {$username} - IP: {$ip}");
+
+            // Redirecionar
+            header("Location: ../index.php");
+            exit;
+        } else {
+            // Incrementar tentativas
+            $_SESSION['login_attempts']++;
+            $_SESSION['last_attempt'] = time();
+            
+            throw new Exception("Credenciais inválidas");
+        }
+    } catch (Exception $e) {
+        $_SESSION['login_error'] = $e->getMessage();
+        error_log("Tentativa de login falhou: {$username} - " . $e->getMessage());
+    } finally {
+        if (isset($stmt)) {
+            $stmt->close();
+        }
     }
-    $stmt->close();
-  } else {
-    echo "Erro na preparação da consulta: " . $conn->error;
-  }
 
-  header("Location: user-login.php");
-  exit;
+    header("Location: user-login.php");
+    exit;
 }
 ?>

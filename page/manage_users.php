@@ -1,17 +1,93 @@
+<?php
+session_start();
+require_once '../db.php';
+
+// Verificação de autenticação
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('Location: user-login.php');
+    exit;
+}
+
+// Verificação de permissão de administrador
+if (!isset($_SESSION['user']['is_admin']) || $_SESSION['user']['is_admin'] !== true) {
+    header('Location: ../index.php');
+    exit;
+}
+
+// Adicione esta linha para garantir que a variável $user esteja definida
+$user = $_SESSION['user'] ?? null;
+
+// Anti CSRF token para operações de modificação
+$csrf_token = bin2hex(random_bytes(32));
+$_SESSION['csrf_token'] = $csrf_token;
+
+// Inicialização de variáveis
+$error_message = '';
+$success_message = '';
+$users = [];
+
+try {
+    if (!isset($conn) || !$conn) {
+        throw new Exception("Falha na conexão com o banco de dados");
+    }
+
+    // Buscar usuários com prepared statement
+    $stmt = $conn->prepare("SELECT id, name, email FROM users ORDER BY name");
+    if (!$stmt) {
+        throw new Exception("Erro na preparação da consulta: " . $conn->error);
+    }
+
+    if (!$stmt->execute()) {
+        throw new Exception("Erro ao buscar usuários: " . $stmt->error);
+    }
+
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $users[] = $row;
+    }
+
+    // Processar mensagens de sessão
+    if (isset($_SESSION['success_message'])) {
+        $success_message = $_SESSION['success_message'];
+        unset($_SESSION['success_message']);
+    }
+    if (isset($_SESSION['error_message'])) {
+        $error_message = $_SESSION['error_message'];
+        unset($_SESSION['error_message']);
+    }
+
+} catch (Exception $e) {
+    error_log("Erro no gerenciamento de usuários: " . $e->getMessage());
+    $error_message = "Ocorreu um erro ao carregar os usuários. Por favor, tente novamente mais tarde.";
+} finally {
+    // Fechar o stmt apenas se ele estiver definido e não fechado
+    if (isset($stmt) && $stmt instanceof mysqli_stmt) {
+        $stmt->close();
+    }
+    if (isset($conn)) {
+        $conn->close();
+    }
+}
+
+// Função auxiliar para sanitização de saída
+function h($str) {
+    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
+}
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Gerenciar Usuários</title>
+  <title>Sou + Digital - Gerenciar Usuários</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
   <!-- Favicons -->
-  <link href="../assets/img/favicon.png" rel="icon">
-  <link href="../assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+  <link href="../assets/img/Icon geral.png" rel="icon">
+  <link href="../assets/img/Icon geral.png" rel="apple-touch-icon">
 
   <!-- Google Fonts -->
   <link href="https://fonts.gstatic.com" rel="preconnect">
@@ -29,33 +105,35 @@
   <!-- Template Main CSS File -->
   <link href="../assets/css/style.css" rel="stylesheet">
 
+  <!-- Headers de segurança -->
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline';">
+
 </head>
 
 <body>
 
   <?php
-    session_start();
-    if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
-        header("Location: ./user-login.php");
-        exit;
-    }
-    // Supondo que os dados do usuário estejam armazenados na sessão
-    if (isset($_SESSION['user'])) {
-      $user = $_SESSION['user'];
-      // Log para informar o que está salvo na sessão
-      error_log("Dados do usuário na sessão: " . print_r($user, true));
-    } else {
-      $user = ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
-    }
-  ?>
+    if ($error_message): ?>
+        <div class="alert alert-danger" role="alert">
+            <?php echo h($error_message); ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($success_message): ?>
+        <div class="alert alert-success" role="alert">
+            <?php echo h($success_message); ?>
+        </div>
+    <?php endif; ?>
 
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
       <a href="./index.php" class="logo d-flex align-items-center">
-        <img src="../assets/img/Icon geral.png" alt="">
-        <span class="d-none d-lg-block">Script</span>
+      <img src="../assets/img/Ico_geral.png" alt="Logo">
+        <span class="d-none d-lg-block">Sou + Digital</span>
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
     </div><!-- End Logo -->
@@ -68,7 +146,11 @@
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
 
             <span class="d-none d-md-block dropdown-toggle ps-2">
-              <?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?>
+              <?php if ($user): ?>
+                <?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?>
+              <?php else: ?>
+                Usuário não encontrado
+              <?php endif; ?>
             </span>
           </a><!-- End Profile Iamge Icon -->
 
@@ -104,23 +186,27 @@
 
   <!-- ======= Sidebar ======= -->
   <aside id="sidebar" class="sidebar">
-
-<ul class="sidebar-nav" id="sidebar-nav">
-
-  <li class="nav-item">
-    <a class="nav-link " href="../index.php">
-      <i class="bi bi-journal-text"></i>
-      <span>Gerador Script</span>
-    </a>
-  </li><!-- End Dashboard Nav -->
-  <li class="nav-item">
-        <a class="nav-link" href="../page/reembolso.php">
+    <ul class="sidebar-nav" id="sidebar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="../index.php">
+          <i class="bi bi-journal-text"></i>
+          <span>Gerador Script</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="reembolso.php">
           <i class="bx bx-money"></i>
           <span>Solicitação de reembolso</span>
         </a>
-      </li><!-- End Reembolso Nav -->
-</ul>
-</aside><!-- End Sidebar-->
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="view-reembolsos.php">
+          <i class="bx bx-list-ul"></i>
+          <span>Visualizar Reembolsos</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
 
   <main id="main" class="main">
 
@@ -141,50 +227,54 @@
 
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Lista de Usuários</h5>
-              <a href="create_user.php" class="btn btn-success mb-3">Criar Novo Usuário</a>
-              <!-- Table with stripped rows -->
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php
-                  // Conexão com o banco de dados
-                  include '../db.php';
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title">Lista de Usuários</h5>
+                <a href="create_user.php" class="btn btn-success">Criar Novo Usuário</a>
+              </div>
 
-                  if (!isset($conn) || !$conn) {
-                    die("Falha na conexão: " . mysqli_connect_error());
-                  }
-
-                  $sql = "SELECT id, name, email FROM users";
-                  $result = $conn->query($sql);
-
-                  if ($result->num_rows > 0) {
-                    while($row = $result->fetch_assoc()) {
-                      echo "<tr>";
-                      echo "<th scope='row'>" . htmlspecialchars($row['id']) . "</th>";
-                      echo "<td>" . htmlspecialchars($row['name']) . "</td>";
-                      echo "<td>" . htmlspecialchars($row['email']) . "</td>";
-                      echo "<td>
-                              <a href='edit_user.php?id=" . htmlspecialchars($row['id']) . "' class='btn btn-primary btn-sm'>Editar</a>
-                              <a href='delete_user.php?id=" . htmlspecialchars($row['id']) . "' class='btn btn-danger btn-sm'>Excluir</a>
-                            </td>";
-                      echo "</tr>";
-                    }
-                  } else {
-                    echo "<tr><td colspan='4'>Nenhum usuário encontrado</td></tr>";
-                  }
-                  $conn->close();
-                  ?>
-                </tbody>
-              </table>
-              <!-- End Table with stripped rows -->
+              <?php if (empty($users)): ?>
+                <div class="alert alert-info">
+                  Nenhum usuário encontrado.
+                </div>
+              <?php else: ?>
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover">
+                    <thead>
+                      <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Nome</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php foreach ($users as $user): ?>
+                        <tr>
+                          <th scope="row"><?php echo h($user['id']); ?></th>
+                          <td><?php echo h($user['name']); ?></td>
+                          <td><?php echo h($user['email']); ?></td>
+                          <td>
+                            <div class="btn-group" role="group">
+                              <a href="edit_user.php?id=<?php echo h($user['id']); ?>" 
+                                 class="btn btn-primary btn-sm">
+                                <i class="bi bi-pencil"></i> Editar
+                              </a>
+                              <form action="delete_user.php" method="post" class="d-inline" 
+                                    onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
+                                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+                                <input type="hidden" name="id" value="<?php echo h($user['id']); ?>">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                  <i class="bi bi-trash"></i> Excluir
+                                </button>
+                              </form>
+                            </div>
+                          </td>
+                        </tr>
+                      <?php endforeach; ?>
+                    </tbody>
+                  </table>
+                </div>
+              <?php endif; ?>
 
             </div>
           </div>
@@ -217,6 +307,18 @@
 
   <!-- Template Main JS File -->
   <script src="../assets/js/main.js"></script>
+
+  <script>
+    // Fechar alertas automaticamente
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+          alert.style.display = 'none';
+        });
+      }, 5000);
+    });
+  </script>
 
 </body>
 

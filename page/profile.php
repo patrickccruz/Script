@@ -1,17 +1,93 @@
+<?php
+session_start();
+require_once '../db.php';
+
+// Verificação de autenticação
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header("Location: user-login.php");
+    exit;
+}
+
+// Anti CSRF token
+$csrf_token = bin2hex(random_bytes(32));
+$_SESSION['csrf_token'] = $csrf_token;
+
+// Inicialização de variáveis
+$updateMessage = '';
+$passwordMessage = '';
+$user = ['name' => 'Usuário', 'username' => 'username', 'email' => 'email@example.com'];
+
+try {
+    // Buscar dados do usuário
+    if (isset($_SESSION['user']['id'])) {
+        $userId = filter_var($_SESSION['user']['id'], FILTER_VALIDATE_INT);
+        if ($userId === false) {
+            throw new Exception("ID de usuário inválido");
+        }
+
+        $stmt = $conn->prepare("SELECT name, username, email, profile_image FROM users WHERE id = ?");
+        if (!$stmt) {
+            throw new Exception("Erro na preparação da consulta: " . $conn->error);
+        }
+
+        $stmt->bind_param("i", $userId);
+        if (!$stmt->execute()) {
+            throw new Exception("Erro ao executar consulta: " . $stmt->error);
+        }
+
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        
+        if (!$user) {
+            throw new Exception("Usuário não encontrado");
+        }
+
+        $stmt->close();
+    }
+
+    // Processar mensagens de sessão
+    if (isset($_SESSION['update_success'])) {
+        $updateMessage = $_SESSION['update_success'];
+        unset($_SESSION['update_success']);
+    }
+
+    if (isset($_SESSION['password_success'])) {
+        $passwordMessage = $_SESSION['password_success'];
+        unset($_SESSION['password_success']);
+    } elseif (isset($_SESSION['password_error'])) {
+        $passwordMessage = $_SESSION['password_error'];
+        unset($_SESSION['password_error']);
+    }
+
+} catch (Exception $e) {
+    error_log("Erro no perfil do usuário: " . $e->getMessage());
+    $errorMessage = "Ocorreu um erro ao carregar o perfil. Por favor, tente novamente mais tarde.";
+}
+
+// Função auxiliar para sanitização de saída
+function h($str) {
+    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
+}
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Sou+ Digital</title>
+  <title>Perfil - Sou + Digital</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
+  <!-- Headers de segurança -->
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline';">
+
   <!-- Favicons -->
-  <link href="../assets/img/favicon.png" rel="icon">
-  <link href="../assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+  <link href="../assets/img/Icon geral.png" rel="icon">
+  <link href="../assets/img/Icon geral.png" rel="apple-touch-icon">
 
   <!-- Google Fonts -->
   <link href="https://fonts.gstatic.com" rel="preconnect">
@@ -25,60 +101,19 @@
   <link href="../assets/vendor/quill/quill.bubble.css" rel="stylesheet">
   <link href="../assets/vendor/remixicon/remixicon.css" rel="stylesheet">
   <link href="../assets/vendor/simple-datatables/style.css" rel="stylesheet">
+
   <!-- Template Main CSS File -->
   <link href="../assets/css/style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.css">
-<script src="https://unpkg.com/cropperjs"></script>
-
 </head>
 
 <body>
 
-  <?php
-    session_start();
-    include '../db.php';
-
-    if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
-        header("Location: user-login.php");
-        exit;
-    }
-
-    // Buscar o nome do usuário pelo ID que está no banco de dados
-    if (isset($_SESSION['user']['id'])) {
-        $userId = $_SESSION['user']['id'];
-        $stmt = $conn->prepare("SELECT name, username, email, profile_image FROM users WHERE id = ?");
-        if ($stmt) {
-            $stmt->bind_param("i", $userId);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $user = $result->fetch_assoc();
-            $stmt->close();
-        } else {
-            echo "Erro na preparação da consulta: " . $conn->error;
-        }
-    } else {
-        $user = ['name' => 'Usuário', 'username' => 'username', 'email' => 'email@example.com'];
-    }
-
-    // Verificar se há uma mensagem de sucesso na sessão
-    if (isset($_SESSION['update_success'])) {
-        $updateMessage = $_SESSION['update_success'];
-        unset($_SESSION['update_success']);
-    } else {
-        $updateMessage = '';
-    }
-
-    // Verificar se há uma mensagem de sucesso ou erro na sessão
-    if (isset($_SESSION['password_success'])) {
-        $passwordMessage = $_SESSION['password_success'];
-        unset($_SESSION['password_success']);
-    } elseif (isset($_SESSION['password_error'])) {
-        $passwordMessage = $_SESSION['password_error'];
-        unset($_SESSION['password_error']);
-    } else {
-        $passwordMessage = '';
-    }
-  ?>
+  <?php if (isset($errorMessage)): ?>
+  <div class="alert alert-danger" role="alert">
+    <?php echo h($errorMessage); ?>
+  </div>
+  <?php endif; ?>
 
   <!-- Modal de Alerta -->
   <?php if ($updateMessage): ?>
@@ -90,7 +125,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <?php echo htmlspecialchars($updateMessage); ?>
+          <?php echo h($updateMessage); ?>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fechar</button>
@@ -110,7 +145,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <?php echo htmlspecialchars($passwordMessage); ?>
+          <?php echo h($passwordMessage); ?>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fechar</button>
@@ -122,73 +157,69 @@
 
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
-
     <div class="d-flex align-items-center justify-content-between">
-      <a href="profile.php" class="logo d-flex align-items-center">
-        <img src="../assets/img/logo.png" alt="">
+      <a href="../index.php" class="logo d-flex align-items-center">
+      <img src="../assets/img/Ico_geral.png" alt="Logo">
         <span class="d-none d-lg-block">Sou + Digital</span>
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
+    </div>
 
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
-
         <li class="nav-item dropdown pe-3">
-
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
             <span class="d-none d-md-block dropdown-toggle ps-2"><?php echo htmlspecialchars($user['name']); ?></span>
-          </a><!-- End Profile Iamge Icon -->
+          </a>
 
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
               <h6><?php echo htmlspecialchars($user['name']); ?></h6>
               <span><?php echo htmlspecialchars($user['username']); ?></span>
             </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
+            <li><hr class="dropdown-divider"></li>
             <li>
               <a class="dropdown-item d-flex align-items-center" href="profile.php">
                 <i class="bi bi-person"></i>
                 <span>Meu Perfil</span>
               </a>
             </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
+            <li><hr class="dropdown-divider"></li>
             <li>
               <a class="dropdown-item d-flex align-items-center" href="logout.php">
                 <i class="bi bi-box-arrow-right"></i>
-                <span>Deslogar</span>
+                <span>Sair</span>
               </a>
             </li>
-
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
+          </ul>
+        </li>
       </ul>
-    </nav><!-- End Icons Navigation -->
+    </nav>
+  </header>
 
-  </header><!-- End Header -->
-
-      <!-- ======= Sidebar ======= -->
+  <!-- ======= Sidebar ======= -->
   <aside id="sidebar" class="sidebar">
-
-<ul class="sidebar-nav" id="sidebar-nav">
-
-  <li class="nav-item">
-    <a class="nav-link " href="../index.php">
-      <i class="bi bi-journal-text"></i>
-      <span>Gerador Script</span>
-    </a>
-  </li><!-- End Dashboard Nav -->
-</ul>
-</aside><!-- End Sidebar-->
-
-  </aside><!-- End Sidebar-->
+    <ul class="sidebar-nav" id="sidebar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="../index.php">
+          <i class="bi bi-journal-text"></i>
+          <span>Gerador Script</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="reembolso.php">
+          <i class="bx bx-money"></i>
+          <span>Solicitação de reembolso</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="view-reembolsos.php">
+          <i class="bx bx-list-ul"></i>
+          <span>Visualizar Reembolsos</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
 
   <main id="main" class="main">
 
@@ -209,8 +240,8 @@
 
           <div class="card">
             <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-              <img src="<?php echo htmlspecialchars($user['profile_image'] ? '../uploads/' . $user['profile_image'] : '../assets/img/sem_foto.png'); ?>" alt="Profile">
-              <h2><?php echo htmlspecialchars($user['name']); ?></h2>
+              <img src="<?php echo h($user['profile_image'] ? '../uploads/' . $user['profile_image'] : '../assets/img/sem_foto.png'); ?>" alt="Profile">
+              <h2><?php echo h($user['name']); ?></h2>
             </div>
           </div>
 
@@ -244,13 +275,13 @@
 
                   <div class="row">
                     <div class="col-lg-3 col-md-4 label ">Nome completo</div>
-                    <div class="col-lg-9 col-md-8"><?php echo htmlspecialchars($user['name']); ?></div>
+                    <div class="col-lg-9 col-md-8"><?php echo h($user['name']); ?></div>
                   </div>
 
 
                   <div class="row">
                     <div class="col-lg-3 col-md-4 label">Email</div>
-                    <div class="col-lg-9 col-md-8"><?php echo htmlspecialchars($user['email']); ?></div>
+                    <div class="col-lg-9 col-md-8"><?php echo h($user['email']); ?></div>
                   </div>
 
                 </div>
@@ -263,7 +294,7 @@
                     <div class="row mb-3">
                       <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Imagem de perfil</label>
                       <div class="col-md-8 col-lg-9">
-                        <img id="profileImagePreview" src="<?php echo htmlspecialchars($user['profile_image'] ? '../uploads/' . $user['profile_image'] : '../assets/img/sem_foto.png'); ?>" alt="Profile">
+                        <img id="profileImagePreview" src="<?php echo h($user['profile_image'] ? '../uploads/' . $user['profile_image'] : '../assets/img/sem_foto.png'); ?>" alt="Profile">
                         <div class="pt-2">
                           <input type="file" name="profile_image" class="form-control d-none" id="profileImageInput">
                           <button type="button" onclick="document.getElementById('profileImageInput').click();" class="btn btn-primary btn-sm" title="Upload new profile image"><i class="bi bi-upload"></i></button>
@@ -279,7 +310,7 @@
                     <div class="row mb-3">
                       <label for="fullName" class="col-md-4 col-lg-3 col-form-label">Nome Completo</label>
                       <div class="col-md-8 col-lg-9">
-                        <input name="name" type="text" class="form-control" id="fullName" value="<?php echo htmlspecialchars($user['name']); ?>">
+                        <input name="name" type="text" class="form-control" id="fullName" value="<?php echo h($user['name']); ?>">
                       </div>
                     </div>
 
@@ -293,7 +324,7 @@
                     <div class="row mb-3">
                       <label for="Email" class="col-md-4 col-lg-3 col-form-label">Email</label>
                       <div class="col-md-8 col-lg-9">
-                        <input name="email" type="email" class="form-control" id="Email" value="<?php echo htmlspecialchars($user['email']); ?>">
+                        <input name="email" type="email" class="form-control" id="Email" value="<?php echo h($user['email']); ?>">
                       </div>
                     </div>
 
@@ -307,25 +338,26 @@
                 <div class="tab-pane fade pt-3" id="profile-change-password">
                   <!-- Change Password Form -->
                   <form action="change_password.php" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
 
                     <div class="row mb-3">
                       <label for="currentPassword" class="col-md-4 col-lg-3 col-form-label">Senha Atual</label>
                       <div class="col-md-8 col-lg-9">
-                        <input name="current_password" type="password" class="form-control" id="currentPassword">
+                        <input name="current_password" type="password" class="form-control" id="currentPassword" required>
                       </div>
                     </div>
 
                     <div class="row mb-3">
                       <label for="newPassword" class="col-md-4 col-lg-3 col-form-label">Nova Senha</label>
                       <div class="col-md-8 col-lg-9">
-                        <input name="new_password" type="password" class="form-control" id="newPassword">
+                        <input name="new_password" type="password" class="form-control" id="newPassword" required minlength="8">
                       </div>
                     </div>
 
                     <div class="row mb-3">
                       <label for="renewPassword" class="col-md-4 col-lg-3 col-form-label">Repita Nova Senha</label>
                       <div class="col-md-8 col-lg-9">
-                        <input name="renew_password" type="password" class="form-control" id="renewPassword">
+                        <input name="renew_password" type="password" class="form-control" id="renewPassword" required minlength="8">
                       </div>
                     </div>
 
@@ -350,11 +382,10 @@
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
     <div class="copyright">
-      &copy; Copyright <strong><span>Patrick C Cruz</span></strong>. Todos os direitos Reservado
+      &copy; Copyright <strong><span>Sou + Digital</span></strong>. Todos os direitos reservados
     </div>
     <div class="credits">
-      Feito pelo <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C
-        Cruz</a>
+      Desenvolvido por <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C Cruz</a>
     </div>
   </footer><!-- End Footer -->
 
@@ -398,9 +429,20 @@
         reader.readAsDataURL(this.files[0]);
       }
     });
-  </script>
 
-  
+    document.addEventListener('DOMContentLoaded', function() {
+      // Fechar modais automaticamente após 5 segundos
+      setTimeout(function() {
+        var modals = document.querySelectorAll('.modal.show');
+        modals.forEach(function(modal) {
+          var modalInstance = bootstrap.Modal.getInstance(modal);
+          if (modalInstance) {
+            modalInstance.hide();
+          }
+        });
+      }, 5000);
+    });
+  </script>
 
 </body>
 </html>

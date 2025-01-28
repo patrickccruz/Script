@@ -1,95 +1,101 @@
 <?php
 session_start();
-include '../db.php';
+require_once '../db.php';
 
-// Criar arquivo de log
+// Verificação de autenticação
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('Location: user-login.php');
+    exit;
+}
+
+// Configurações de upload
+define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB
+define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif']);
+define('UPLOAD_DIR', '../uploads/');
+
+// Criar arquivo de log com timestamp
 $logFile = '../uploads/upload_log.txt';
-file_put_contents($logFile, date('Y-m-d H:i:s') . " - Iniciando upload\n", FILE_APPEND);
+
+function writeLog($message) {
+    global $logFile;
+    file_put_contents($logFile, date('Y-m-d H:i:s') . " - " . $message . "\n", FILE_APPEND);
+}
+
+writeLog("Iniciando upload");
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Log do conteúdo de $_FILES
-    file_put_contents($logFile, date('Y-m-d H:i:s') . " - FILES: " . print_r($_FILES, true) . "\n", FILE_APPEND);
-
-    // Verificar se o diretório uploads existe e tem permissões corretas
-    $uploadFileDir = '../uploads/';
-    if (!file_exists($uploadFileDir)) {
-        mkdir($uploadFileDir, 0777, true);
-        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Diretório uploads criado\n", FILE_APPEND);
-    }
-
-    // Verificar permissões do diretório
-    file_put_contents($logFile, date('Y-m-d H:i:s') . " - Permissões do diretório: " . substr(sprintf('%o', fileperms($uploadFileDir)), -4) . "\n", FILE_APPEND);
-
-    if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPLOAD_ERR_NO_FILE) {
-        $fileTmpPath = $_FILES['profile_image']['tmp_name'];
-        $fileName = time() . '_' . $_FILES['profile_image']['name']; // Adiciona timestamp para evitar nomes duplicados
-        $fileSize = $_FILES['profile_image']['size'];
-        $fileType = $_FILES['profile_image']['type'];
-        $fileNameCmps = explode(".", $fileName);
-        $fileExtension = strtolower(end($fileNameCmps));
-
-        // Log dos detalhes do arquivo
-        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Detalhes do arquivo:\n", FILE_APPEND);
-        file_put_contents($logFile, "Nome temporário: $fileTmpPath\n", FILE_APPEND);
-        file_put_contents($logFile, "Nome final: $fileName\n", FILE_APPEND);
-        file_put_contents($logFile, "Tamanho: $fileSize\n", FILE_APPEND);
-        file_put_contents($logFile, "Tipo: $fileType\n", FILE_APPEND);
-
-        $allowedfileExtensions = array('jpg', 'gif', 'png', 'jpeg');
-
-        if (in_array($fileExtension, $allowedfileExtensions)) {
-            $dest_path = $uploadFileDir . $fileName;
-
-            try {
-                if (move_uploaded_file($fileTmpPath, $dest_path)) {
-                    file_put_contents($logFile, date('Y-m-d H:i:s') . " - Arquivo movido com sucesso\n", FILE_APPEND);
-
-                    // Verificar se o usuário está logado e tem ID
-                    if (isset($_SESSION['user']['id'])) {
-                        $userId = $_SESSION['user']['id'];
-                        
-                        // Log do ID do usuário
-                        file_put_contents($logFile, date('Y-m-d H:i:s') . " - ID do usuário: $userId\n", FILE_APPEND);
-
-                        $stmt = $conn->prepare("UPDATE users SET profile_image = ? WHERE id = ?");
-                        if ($stmt) {
-                            $stmt->bind_param("si", $fileName, $userId);
-                            $result = $stmt->execute();
-                            
-                            if ($result) {
-                                $_SESSION['update_success'] = "Imagem de perfil atualizada com sucesso.";
-                                file_put_contents($logFile, date('Y-m-d H:i:s') . " - Banco de dados atualizado com sucesso\n", FILE_APPEND);
-                            } else {
-                                $_SESSION['update_success'] = "Erro ao atualizar o banco de dados: " . $stmt->error;
-                                file_put_contents($logFile, date('Y-m-d H:i:s') . " - Erro ao atualizar o banco de dados: " . $stmt->error . "\n", FILE_APPEND);
-                            }
-                            $stmt->close();
-                        } else {
-                            $_SESSION['update_success'] = "Erro na preparação da consulta: " . $conn->error;
-                            file_put_contents($logFile, date('Y-m-d H:i:s') . " - Erro na preparação da consulta: " . $conn->error . "\n", FILE_APPEND);
-                        }
-                    } else {
-                        $_SESSION['update_success'] = "Usuário não está logado corretamente.";
-                        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Usuário não está logado\n", FILE_APPEND);
-                    }
-                } else {
-                    $_SESSION['update_success'] = "Erro ao mover o arquivo para o diretório de uploads.";
-                    file_put_contents($logFile, date('Y-m-d H:i:s') . " - Erro ao mover o arquivo\n", FILE_APPEND);
-                }
-            } catch (Exception $e) {
-                $_SESSION['update_success'] = "Erro: " . $e->getMessage();
-                file_put_contents($logFile, date('Y-m-d H:i:s') . " - Exceção: " . $e->getMessage() . "\n", FILE_APPEND);
-            }
-        } else {
-            $_SESSION['update_success'] = "Extensão de arquivo não permitida.";
-            file_put_contents($logFile, date('Y-m-d H:i:s') . " - Extensão não permitida\n", FILE_APPEND);
+    try {
+        // Verificar diretório de uploads
+        if (!file_exists(UPLOAD_DIR)) {
+            mkdir(UPLOAD_DIR, 0755, true);
+            writeLog("Diretório uploads criado");
         }
-    } else {
-        $uploadError = isset($_FILES['profile_image']) ? $_FILES['profile_image']['error'] : 'Arquivo não enviado';
-        $_SESSION['update_success'] = "Nenhuma imagem selecionada ou erro no upload. Código: " . $uploadError;
-        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Erro no upload: " . $uploadError . "\n", FILE_APPEND);
+
+        if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] === UPLOAD_ERR_NO_FILE) {
+            throw new Exception("Nenhum arquivo enviado");
+        }
+
+        $file = $_FILES['profile_image'];
+        
+        // Validações básicas
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            throw new Exception("Erro no upload: " . $file['error']);
+        }
+
+        if ($file['size'] > MAX_FILE_SIZE) {
+            throw new Exception("Arquivo muito grande. Máximo permitido: " . (MAX_FILE_SIZE / 1024 / 1024) . "MB");
+        }
+
+        // Validar tipo de arquivo usando finfo
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($file['tmp_name']);
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif'];
+        
+        if (!in_array($mimeType, $allowedMimes)) {
+            throw new Exception("Tipo de arquivo não permitido");
+        }
+
+        // Gerar nome único para o arquivo
+        $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($fileExtension, ALLOWED_EXTENSIONS)) {
+            throw new Exception("Extensão não permitida");
+        }
+
+        $newFileName = uniqid('profile_', true) . '.' . $fileExtension;
+        $uploadPath = UPLOAD_DIR . $newFileName;
+
+        // Mover arquivo
+        if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
+            throw new Exception("Falha ao mover arquivo");
+        }
+
+        // Atualizar banco de dados
+        if (!isset($_SESSION['user']['id'])) {
+            throw new Exception("Usuário não identificado");
+        }
+
+        $stmt = $conn->prepare("UPDATE users SET profile_image = ? WHERE id = ?");
+        if (!$stmt) {
+            throw new Exception("Erro na preparação da query: " . $conn->error);
+        }
+
+        $stmt->bind_param("si", $newFileName, $_SESSION['user']['id']);
+        if (!$stmt->execute()) {
+            throw new Exception("Erro ao atualizar banco de dados: " . $stmt->error);
+        }
+
+        writeLog("Upload bem sucedido: " . $newFileName);
+        $_SESSION['update_success'] = "Imagem de perfil atualizada com sucesso.";
+
+    } catch (Exception $e) {
+        writeLog("ERRO: " . $e->getMessage());
+        $_SESSION['update_success'] = "Erro: " . $e->getMessage();
+    } finally {
+        if (isset($stmt)) {
+            $stmt->close();
+        }
     }
-    
+
     header("Location: profile.php");
     exit;
 }

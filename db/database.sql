@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) NOT NULL,
   username VARCHAR(255) NOT NULL,
   password VARCHAR(255) NOT NULL, -- A senha deve ser criptografada antes de ser inserida aqui
-  profile_image VARCHAR(255) -- Adiciona a coluna para armazenar o caminho da imagem de perfil
+  profile_image VARCHAR(255), -- Adiciona a coluna para armazenar o caminho da imagem de perfil
+  is_admin BOOLEAN DEFAULT FALSE -- Coluna para controle de acesso administrativo
 );
 
 CREATE TABLE IF NOT EXISTS reports (

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Sou + Digital</title>
+  <title>Login - Sou + Digital</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -24,7 +24,7 @@
   <link href="../assets/vendor/quill/quill.snow.css" rel="stylesheet">
   <link href="../assets/vendor/quill/quill.bubble.css" rel="stylesheet">
   <link href="../assets/vendor/remixicon/remixicon.css" rel="stylesheet">
-  <link href="../index.php" rel="stylesheet">
+  <link href="../assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
   <!-- Template Main CSS File -->
   <link href="../assets/css/style.css" rel="stylesheet">
@@ -34,7 +34,7 @@
   <?php
     session_start();
     if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
-        header("Location: ../index.php"); // Corrigir o caminho para ../index.php
+        header("Location: ../index.php");
         exit;
     }
 
@@ -47,32 +47,29 @@
 
   <main>
     <div class="container">
-
       <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
         <div class="container">
           <div class="row justify-content-center">
             <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
 
               <div class="d-flex justify-content-center py-4">
-                <a href="index.html" class="logo d-flex align-items-center w-auto">
-                  <img src="../assets/img/logo.png" alt="">
+                <a href="../index.php" class="logo d-flex align-items-center w-auto">
+                  <img src="../assets/img/Ico_geral.png" alt="Logo">
                   <span class="d-none d-lg-block">Sou + Digital</span>
                 </a>
-              </div><!-- End Logo -->
+              </div>
 
               <div class="card mb-3">
-
                 <div class="card-body">
-
                   <div class="pt-4 pb-2">
                     <h5 class="card-title text-center pb-0 fs-4">Entre com sua conta</h5>
-                    <p class="text-center small">Entre com o seu usuario e senha</p>
+                    <p class="text-center small">Digite seu usuário e senha para acessar</p>
                   </div>
 
                   <form class="row g-3 needs-validation" novalidate action="login.php" method="post">
                     <?php if ($error_message): ?>
                       <div class="alert alert-danger" role="alert">
-                        <?php echo $error_message; ?>
+                        <?php echo htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8'); ?>
                       </div>
                     <?php endif; ?>
 
@@ -101,31 +98,27 @@
                       <button class="btn btn-primary w-100" type="submit">Login</button>
                     </div>
                     <div class="col-12">
-                      <p class="small mb-0">Não tem uma conta ? <a href="page-register.php">Crie a sua conta</a></p>
+                      <p class="small mb-0">Não tem uma conta? <a href="page-register.php">Crie a sua conta</a></p>
                     </div>
                   </form>
-
                 </div>
               </div>
 
               <div class="credits">
-                  <div class="copyright">
-                    &copy; Copyright <strong><span>Patrick C Cruz</span></strong>. Todos os direitos Reservado
-                  </div>
-                  <div class="credits">
-                    Feito pelo <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C
-                      Cruz</a>
-                  </div>
+                <div class="copyright">
+                  &copy; Copyright <strong><span>Sou + Digital</span></strong>. Todos os direitos reservados
+                </div>
+                <div class="credits">
+                  Desenvolvido por <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C Cruz</a>
+                </div>
               </div>
 
             </div>
           </div>
         </div>
-
       </section>
-
     </div>
-  </main><!-- End #main -->
+  </main>
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 

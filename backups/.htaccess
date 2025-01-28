@@ -1,0 +1,17 @@
+# Negar acesso a todos os arquivos
+Deny from all
+
+# Desabilitar listagem de diretório
+Options -Indexes
+
+# Bloquear acesso a arquivos específicos
+<FilesMatch "\.(sql|zip|log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Proteger contra acesso direto a arquivos
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ - [F,L]
+</IfModule> 

@@ -1,18 +1,45 @@
 <?php
-include '../db.php';
+session_start();
+require_once '../db.php';
+
+// Verificação de autenticação
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('Location: user-login.php');
+    exit;
+}
+
+// Verificação de permissão de administrador (ajuste conforme sua lógica de permissões)
+if (!isset($_SESSION['user']['is_admin']) || $_SESSION['user']['is_admin'] !== true) {
+    header('Location: ../index.php');
+    exit;
+}
+
+// Anti CSRF token
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die('Token CSRF inválido');
+    }
+}
+$csrf_token = bin2hex(random_bytes(32));
+$_SESSION['csrf_token'] = $csrf_token;
 
 $error_message = '';
-$user = isset($user) ? $user : ['name' => 'Guest', 'username' => 'guest'];
+$user = $_SESSION['user'] ?? ['name' => 'Guest', 'username' => 'guest'];
 
 if (!isset($conn) || !$conn) {
   die("Falha na conexão: " . mysqli_connect_error());
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  $name = $_POST['name'];
-  $username = $_POST['username'];
-  $email = $_POST['email'];
-  $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+  // Sanitização das entradas
+  $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
+  $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
+  $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+  
+  if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $error_message = "Email inválido.";
+  } else {
+    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
   // Verificar se o nome, nome de usuário ou e-mail já existe
   $check_sql = "SELECT * FROM users WHERE name = ? OR username = ? OR email = ?";
@@ -36,6 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bind_param("ssss", $name, $username, $email, $password);
 
     if ($stmt->execute()) {
+      // Adicionar log de criação
+      error_log("Novo usuário criado: " . $username . " por " . $_SESSION['user']['username']);
       header("Location: manage_users.php");
       exit();
     } else {
@@ -46,24 +75,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   }
 
   $check_stmt->close();
+  }
 }
 
 $conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
+
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Criar Usuário</title>
+  <title>Criar Usuário - Sou + Digital</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
   <!-- Favicons -->
-  <link href="../assets/img/favicon.png" rel="icon">
-  <link href="../assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+  <link href="../assets/img/Icon geral.png" rel="icon">
+  <link href="../assets/img/Icon geral.png" rel="apple-touch-icon">
 
   <!-- Google Fonts -->
   <link href="https://fonts.gstatic.com" rel="preconnect">
@@ -82,84 +113,74 @@ $conn->close();
   <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 
-
 <body>
-
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
-
     <div class="d-flex align-items-center justify-content-between">
-      <a href="index.php" class="logo d-flex align-items-center">
-        <img src="assets/img/Icon geral.png" alt="">
-        <span class="d-none d-lg-block">Script</span>
+      <a href="../index.php" class="logo d-flex align-items-center">
+        <img src="../assets/img/logo.png" alt="Logo">
+        <span class="d-none d-lg-block">Sou + Digital</span>
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
+    </div>
 
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
-
         <li class="nav-item dropdown pe-3">
-
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-
-
-
-            <span class="d-none d-md-block dropdown-toggle ps-2">
-              <?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?>
-            </span>
-          </a><!-- End Profile Iamge Icon -->
+            <img src="<?php echo isset($user['profile_image']) ? '../uploads/' . htmlspecialchars($user['profile_image']) : '../assets/img/sem_foto.png'; ?>" alt="Profile" class="rounded-circle">
+            <span class="d-none d-md-block dropdown-toggle ps-2"><?php echo isset($user['name']) ? htmlspecialchars($user['name']) : 'Usuário'; ?></span>
+          </a>
 
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
-              <h6>Nome: <?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?></h6>
-              <span> Usuario: <?php echo htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8'); ?></span>
+              <h6><?php echo isset($user['name']) ? htmlspecialchars($user['name']) : 'Usuário'; ?></h6>
+              <span><?php echo isset($user['username']) ? htmlspecialchars($user['username']) : ''; ?></span>
             </li>
+            <li><hr class="dropdown-divider"></li>
             <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="./page/profile.php">
+              <a class="dropdown-item d-flex align-items-center" href="profile.php">
                 <i class="bi bi-person"></i>
                 <span>Meu Perfil</span>
               </a>
             </li>
+            <li><hr class="dropdown-divider"></li>
             <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="page/logout.php">
+              <a class="dropdown-item d-flex align-items-center" href="logout.php">
                 <i class="bi bi-box-arrow-right"></i>
-                <span>Deslogar</span>
+                <span>Sair</span>
               </a>
             </li>
-
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
+          </ul>
+        </li>
       </ul>
-    </nav><!-- End Icons Navigation -->
-  </header><!-- End Header -->
+    </nav>
+  </header>
 
-   <!-- ======= Sidebar ======= -->
-   <aside id="sidebar" class="sidebar">
-
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar">
     <ul class="sidebar-nav" id="sidebar-nav">
-
-    <li class="nav-item">
-        <a class="nav-link " href="../index.php">
-        <i class="bi bi-journal-text"></i>
-        <span>Gerador Script</span>
+      <li class="nav-item">
+        <a class="nav-link" href="../index.php">
+          <i class="bi bi-journal-text"></i>
+          <span>Gerador Script</span>
         </a>
-    </li><!-- End Dashboard Nav -->
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="reembolso.php">
+          <i class="bx bx-money"></i>
+          <span>Solicitação de reembolso</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="view-reembolsos.php">
+          <i class="bx bx-list-ul"></i>
+          <span>Visualizar Reembolsos</span>
+        </a>
+      </li>
     </ul>
-    </aside><!-- End Sidebar-->
-  
+  </aside>
+
   <main id="main" class="main">
     <div class="pagetitle">
       <h1>Criar Usuário</h1>
@@ -187,6 +208,7 @@ $conn->close();
               <?php endif; ?>
 
               <form method="post" action="create_user.php">
+                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 <div class="mb-3">
                   <label for="name" class="form-label">Nome</label>
                   <input type="text" class="form-control" id="name" name="name" required>
@@ -216,29 +238,26 @@ $conn->close();
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
     <div class="copyright">
-      &copy; Copyright <strong><span>Patrick C Cruz</span></strong>. Todos os direitos Reservado
+      &copy; Copyright <strong><span>Sou + Digital</span></strong>. Todos os direitos reservados
     </div>
     <div class="credits">
-      Feito pelo <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C
-        Cruz</a>
+      Desenvolvido por <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C Cruz</a>
     </div>
-  </footer><!-- End Footer -->
+  </footer>
 
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
-      class="bi bi-arrow-up-short"></i></a>
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
-  <script src="assets/vendor/chart.js/chart.umd.js"></script>
-  <script src="assets/vendor/echarts/echarts.min.js"></script>
-  <script src="assets/vendor/quill/quill.min.js"></script>
-  <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
-  <script src="assets/vendor/tinymce/tinymce.min.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
+  <script src="../assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="../assets/vendor/echarts/echarts.min.js"></script>
+  <script src="../assets/vendor/quill/quill.min.js"></script>
+  <script src="../assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="../assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="../assets/vendor/php-email-form/validate.js"></script>
 
   <!-- Template Main JS File -->
-  <script src="assets/js/main.js"></script>
-  
+  <script src="../assets/js/main.js"></script>
 </body>
 </html>

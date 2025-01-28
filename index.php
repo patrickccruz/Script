@@ -110,8 +110,8 @@
 
     <div class="d-flex align-items-center justify-content-between">
       <a href="./index.php" class="logo d-flex align-items-center">
-        <img src="./assets/img/Icon geral.png" alt="">
-        <span class="d-none d-lg-block">Script</span>
+      <img src="./assets/img/Ico_geral.png" alt="Logo">
+        <span class="d-none d-lg-block">Sou + Digital</span>
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
     </div><!-- End Logo -->
@@ -166,33 +166,27 @@
 
   <!-- ======= Sidebar ======= -->
   <aside id="sidebar" class="sidebar">
-
     <ul class="sidebar-nav" id="sidebar-nav">
-
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-menu-button-wide"></i><span>Components</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link active" href="index.php">
+          <i class="bi bi-journal-text"></i>
+          <span>Gerador Script</span>
         </a>
-        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a class="nav-link" href="index.php">
-              <i class="bi bi-journal-text"></i>
-              <span>Gerador Script</span>
-            </a>
-          </li>
-        </ul>
-      </li><!-- End Components Nav -->
-
+      </li>
       <li class="nav-item">
         <a class="nav-link" href="page/reembolso.php">
           <i class="bx bx-money"></i>
           <span>Solicitação de reembolso</span>
         </a>
-      </li><!-- End Reembolso Nav -->
-
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="page/view-reembolsos.php">
+          <i class="bx bx-list-ul"></i>
+          <span>Visualizar Reembolsos</span>
+        </a>
+      </li>
     </ul>
-
-  </aside><!-- End Sidebar-->
+  </aside>
 
   <main id="main" class="main">
     <section class="section">

@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Visualizar Reembolsos</title>
+  <title>Reembolsos - Sou + Digital</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
   <link href="../assets/img/Icon geral.png" rel="icon">
   <link href="../assets/img/Icon geral.png" rel="apple-touch-icon">
   <link href="https://fonts.gstatic.com" rel="preconnect">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
   <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
   <link href="../assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
@@ -30,13 +30,26 @@
     if ($conn->connect_error) {
       die("Connection failed: " . $conn->connect_error);
     }
+
+    // Buscar dados do usuário logado
+    $user = [];
+    if (isset($_SESSION['user']['id'])) {
+        $userId = $_SESSION['user']['id'];
+        $stmt = $conn->prepare("SELECT name, username, profile_image FROM users WHERE id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result_user = $stmt->get_result();
+        $user = $result_user->fetch_assoc();
+        $stmt->close();
+    }
+
     $result = $conn->query("SELECT reembolsos.*, users.name as user_name, users.profile_image FROM reembolsos JOIN users ON reembolsos.user_id = users.id ORDER BY reembolsos.created_at DESC");
   ?>
   <header id="header" class="header fixed-top d-flex align-items-center">
     <div class="d-flex align-items-center justify-content-between">
       <a href="../index.php" class="logo d-flex align-items-center">
-        <img src="../assets/img/Icon geral.png" alt="">
-        <span class="d-none d-lg-block">Script</span>
+      <img src="../assets/img/Ico_geral.png" alt="Logo">
+        <span class="d-none d-lg-block">Sou + Digital</span>
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
     </div>
@@ -44,27 +57,25 @@
       <ul class="d-flex align-items-center">
         <li class="nav-item dropdown pe-3">
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <span class="d-none d-md-block dropdown-toggle ps-2">
-              <?php echo htmlspecialchars($_SESSION['user']['name'], ENT_QUOTES, 'UTF-8'); ?>
-            </span>
+            <span class="d-none d-md-block dropdown-toggle ps-2"><?php echo isset($user['name']) ? htmlspecialchars($user['name']) : 'Usuário'; ?></span>
           </a>
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
-              <h6>Nome: <?php echo htmlspecialchars($_SESSION['user']['name'], ENT_QUOTES, 'UTF-8'); ?></h6>
-              <span> Usuario: <?php echo htmlspecialchars($_SESSION['user']['username'], ENT_QUOTES, 'UTF-8'); ?></span>
+              <h6><?php echo isset($user['name']) ? htmlspecialchars($user['name']) : 'Usuário'; ?></h6>
+              <span><?php echo isset($user['username']) ? htmlspecialchars($user['username']) : ''; ?></span>
             </li>
             <li><hr class="dropdown-divider"></li>
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="../page/profile.php">
+              <a class="dropdown-item d-flex align-items-center" href="profile.php">
                 <i class="bi bi-person"></i>
                 <span>Meu Perfil</span>
               </a>
             </li>
             <li><hr class="dropdown-divider"></li>
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="../page/logout.php">
+              <a class="dropdown-item d-flex align-items-center" href="logout.php">
                 <i class="bi bi-box-arrow-right"></i>
-                <span>Deslogar</span>
+                <span>Sair</span>
               </a>
             </li>
           </ul>
@@ -75,26 +86,19 @@
   <aside id="sidebar" class="sidebar">
     <ul class="sidebar-nav" id="sidebar-nav">
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-menu-button-wide"></i><span>Components</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link" href="../index.php">
+          <i class="bi bi-journal-text"></i>
+          <span>Gerador Script</span>
         </a>
-        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a class="nav-link" href="../index.php">
-              <i class="bi bi-journal-text"></i>
-              <span>Gerador Script</span>
-            </a>
-          </li>
-        </ul>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="../page/reembolso.php">
+        <a class="nav-link" href="reembolso.php">
           <i class="bx bx-money"></i>
           <span>Solicitação de reembolso</span>
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="../page/view-reembolsos.php">
+        <a class="nav-link active" href="view-reembolsos.php">
           <i class="bx bx-list-ul"></i>
           <span>Visualizar Reembolsos</span>
         </a>
@@ -190,10 +194,10 @@
   </main>
   <footer id="footer" class="footer">
     <div class="copyright">
-      &copy; Copyright <strong><span>Patrick C Cruz</span></strong>. Todos os direitos Reservado
+      &copy; Copyright <strong><span>Sou + Digital</span></strong>. Todos os direitos reservados
     </div>
     <div class="credits">
-      Feito pelo <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C Cruz</a>
+      Desenvolvido por <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C Cruz</a>
     </div>
   </footer>
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
