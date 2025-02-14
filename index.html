@@ -53,6 +53,7 @@
     </div><!-- End Logo -->
   </header><!-- End Header -->
 
+
   <!-- ======= Sidebar ======= -->
   <aside id="sidebar" class="sidebar">
 
@@ -84,7 +85,22 @@
                 <!-- Número do Chamado -->
                 <div class="form-floating mb-3">
                   <input type="number" class="form-control" id="numeroChamado" oninput="infoGeral()">
-                  <label for="numeroChamado">Número do chamado:</label>
+                  <label for="numeroChamado">Nº do chamado:</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="nomeInformante" oninput="infoGeral()">
+                  <label for="nomeInformante">Nome de quem informou o chamado:</label>
+                </div>
+
+                <!-- Tipo de Chamado -->
+                <div class="form-floating mb-3">
+                  <select class="form-select" id="tipoChamado" oninput="infoGeral()">
+                    <option value="">Selecione o tipo</option>
+                    <option value="implantação">Implantação</option>
+                    <option value="sustentação">Sustentação</option>
+                  </select>
+                  <label for="tipoChamado">Tipo de chamado:</label>
                 </div>
 
                 <!-- Cliente -->
@@ -93,14 +109,7 @@
                   <label for="cliente">Cliente:</label>
                 </div>
 
-                <!-- Nome de quem informou o chamado -->
-                <div class="form-floating mb-3">
-                  <input type="text" class="form-control" id="nomeInformante" oninput="infoGeral()">
-                  <label for="nomeInformante">Nome de quem informou o chamado:</label>
-                </div>
-
-
-                <!-- Quantidade de Patrimônios Tratados -->
+                <!-- Quantidade de Patrimônios -->
                 <div class="form-floating mb-3">
                   <input type="number" class="form-control" id="quantidadePatrimonios" oninput="infoGeral()">
                   <label for="quantidadePatrimonios">Quantidade de patrimônios tratados:</label>
@@ -116,7 +125,7 @@
                   <label for="kmFinal">KM final:</label>
                 </div>
 
-                <!-- Horários de Chegada e Saída -->
+                <!-- Horários -->
                 <div class="form-floating mb-3">
                   <input type="time" class="form-control" id="horaChegada" oninput="infoGeral()">
                   <label for="horaChegada">Horário de chegada no chamado:</label>
@@ -136,42 +145,33 @@
                   <label for="enderecoChegada">Endereço de chegada:</label>
                 </div>
 
-                <!-- Informações Adicionais -->
+                <!-- Descrição do Chamado -->
                 <div class="form-floating mb-3">
-                  <textarea class="form-control" id="informacoesAdicionais" style="height: 250px"
-                    oninput="infoGeral()"></textarea>
-                  <label for="informacoesAdicionais">Breve descrição do chamado:</label>
+                  <textarea class="form-control" id="descricaoChamado" style="height: 150px" oninput="infoGeral()"></textarea>
+                  <label for="descricaoChamado">Breve descrição do chamado:</label>
+                </div>
+
+                <!-- Status do Chamado -->
+                <div class="form-floating mb-3">
+                  <select class="form-select" id="statusChamado" oninput="infoGeral()">
+                    <option value="">Selecione o status</option>
+                    <option value="resolvido">Resolvido</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="improdutivo">Improdutivo</option>
+                  </select>
+                  <label for="statusChamado">Status do chamado:</label>
                 </div>
 
                 <!-- Ações -->
                 <div class="mb-3">
-                  <button type="button" class="btn btn-outline-primary" onclick="copResp2()" data-bs-toggle="modal"
-                    data-bs-target="#exampleModal3">Copiar Texto</button>
-                  <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
+                  <button type="button" class="btn btn-outline-primary" onclick="enviarRelatorio()">
+                    <i class="bi bi-send"></i> Enviar Relatório
+                  </button>
+                  <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">
+                    <i class="bi bi-trash"></i> Apagar Tudo
+                  </button>
                 </div>
               </form>
-
-              <!-- Modal -->
-              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h1 class="modal-title fs-5" id="exampleModalLabel">Texto Copiado</h1>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="alert alert-warning" role="alert">Ola</div>
-                      <p id="geralResp0"></p>
-                      <p id="geralResp1"></p>
-                      <p id="geralResp2"></p>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Fechar</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
             </div>
           </div>
@@ -198,9 +198,47 @@
   <!-- Vendor JS Files -->
   <script src="script.js"></script>
   <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+
+  <!-- Modais de Notificação -->
+  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">
+            <i class="bi bi-check-circle"></i> Sucesso
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="successModalBody">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <i class="bi bi-exclamation-circle"></i> Erro
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="errorModalBody">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </body>
 
