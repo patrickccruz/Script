@@ -10,10 +10,19 @@ $basePath = $isSubfolder ? '../' : '';
 <!-- ======= Sidebar ======= -->
 <aside id="sidebar" class="sidebar">
   <ul class="sidebar-nav" id="sidebar-nav">
+    <!-- Categoria: Principal -->
+    <li class="nav-heading">Principal</li>
+    <li class="nav-item">
+      <a class="nav-link" href="<?php echo $basePath; ?>index.php">
+        <i class="bi bi-house"></i>
+        <span>Página Inicial</span>
+      </a>
+    </li>
+
     <!-- Categoria: Ferramentas -->
     <li class="nav-heading">Ferramentas</li>
     <li class="nav-item">
-      <a class="nav-link" href="<?php echo $basePath; ?>index.php">
+      <a class="nav-link" href="<?php echo $basePath; ?>page/gerar-script.php">
         <i class="bi bi-journal-text"></i>
         <span>Gerador Script</span>
       </a>
@@ -27,12 +36,12 @@ $basePath = $isSubfolder ? '../' : '';
       </a>
       <ul id="reembolsos-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
         <li>
-          <a href="<?php echo $basePath; ?>page/reembolso.php">
+          <a href="<?php echo $basePath; ?>page/solicitar-reembolso.php">
             <i class="bi bi-circle"></i><span>Solicitar Reembolso</span>
           </a>
         </li>
         <li>
-          <a href="<?php echo $basePath; ?>page/my-reembolsos.php">
+          <a href="<?php echo $basePath; ?>page/meus-reembolsos.php">
             <i class="bi bi-circle"></i><span>Meus Reembolsos</span>
           </a>
         </li>
@@ -48,7 +57,7 @@ $basePath = $isSubfolder ? '../' : '';
       </a>
       <ul id="admin-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
         <li>
-          <a href="<?php echo $basePath; ?>page/manage_users.php">
+          <a href="<?php echo $basePath; ?>page/gerenciar-usuarios.php">
             <i class="bi bi-circle"></i><span>Gerenciar Usuários</span>
           </a>
         </li>
@@ -61,8 +70,13 @@ $basePath = $isSubfolder ? '../' : '';
       </a>
       <ul id="relatorios-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
         <li>
-          <a href="<?php echo $basePath; ?>page/all-reembolsos.php">
+          <a href="<?php echo $basePath; ?>page/todos-reembolsos.php">
             <i class="bi bi-circle"></i><span>Todos os Reembolsos</span>
+          </a>
+        </li>
+        <li>
+          <a href="<?php echo $basePath; ?>page/visualizar-relatorios.php">
+            <i class="bi bi-circle"></i><span>Relatórios de Atendimento</span>
           </a>
         </li>
       </ul>

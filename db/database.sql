@@ -42,6 +42,52 @@ CREATE TABLE IF NOT EXISTS reembolsos (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+-- Tabelas do Blog
+
+-- Tabela para posts do blog
+CREATE TABLE IF NOT EXISTS blog_posts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    titulo VARCHAR(255) NOT NULL,
+    conteudo TEXT NOT NULL,
+    imagem_capa VARCHAR(255) NOT NULL,
+    data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Tabela para links dos posts
+CREATE TABLE IF NOT EXISTS blog_links (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    post_id INT NOT NULL,
+    url VARCHAR(255) NOT NULL,
+    descricao VARCHAR(255) NOT NULL,
+    FOREIGN KEY (post_id) REFERENCES blog_posts(id) ON DELETE CASCADE
+);
+
+-- Tabela para comentários
+CREATE TABLE IF NOT EXISTS blog_comentarios (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    post_id INT NOT NULL,
+    user_id INT NOT NULL,
+    comentario TEXT NOT NULL,
+    data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES blog_posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Tabela para reações
+CREATE TABLE IF NOT EXISTS blog_reacoes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    post_id INT NOT NULL,
+    user_id INT NOT NULL,
+    tipo_reacao ENUM('curtir', 'amar', 'rir', 'surpreso', 'triste', 'bravo') NOT NULL,
+    data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES blog_posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_reacao (post_id, user_id)
+);
+
 DELIMITER //
 
 CREATE TRIGGER before_insert_users

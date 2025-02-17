@@ -1,410 +1,312 @@
+<?php
+session_start();
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
+    header("Location: page/autenticacao.php");
+    exit;
+}
+
+if (isset($_SESSION['user'])) {
+    $user = $_SESSION['user'];
+} else {
+    $user = ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
+}
+
+// Conexão com o banco de dados
+$conn = new mysqli('localhost', 'root', '', 'sou_digital');
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Buscar posts do blog
+$sql = "SELECT p.*, u.name as author_name, 
+        (SELECT COUNT(*) FROM blog_reacoes WHERE post_id = p.id) as total_reactions,
+        (SELECT COUNT(*) FROM blog_comentarios WHERE post_id = p.id) as total_comments
+        FROM blog_posts p 
+        LEFT JOIN users u ON p.user_id = u.id 
+        ORDER BY p.data_criacao DESC";
+$result = $conn->query($sql);
+?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Gerador de Script</title>
-  <meta content="" name="description">
-  <meta content="" name="keywords">
+    <title>Página Inicial - Sou + Digital</title>
+    <meta content="" name="description">
+    <meta content="" name="keywords">
 
-  <!-- Favicons -->
-  <link href="assets/img/Icon geral.png" rel="icon">
-  <link href="assets/img/Icon geral.png" rel="apple-touch-icon">
+    <!-- Favicons -->
+    <link href="assets/img/Icon geral.png" rel="icon">
+    <link href="assets/img/Icon geral.png" rel="apple-touch-icon">
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.gstatic.com" rel="preconnect">
-  <link
-    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i"
-    rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i" rel="stylesheet">
 
-  <!-- Vendor CSS Files -->
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
-  <link href="assets/vendor/quill/quill.snow.css" rel="stylesheet">
-  <link href="assets/vendor/quill/quill.bubble.css" rel="stylesheet">
-  <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
-  <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
+    <!-- Vendor CSS Files -->
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="assets/vendor/quill/quill.snow.css" rel="stylesheet">
+    <link href="assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+    <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+    <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
-  <!-- Template Main CSS File -->
-  <link href="assets/css/style.css" rel="stylesheet">
-  <style>
-    :focus {
-      border-color: #1bd81b !important; /* Use !important para sobrescrever */
-      box-shadow: 0 0 5px rgb(7, 228, 25) !important;
-      outline: none !important;
-    }
-  </style>
+    <!-- Template Main CSS File -->
+    <link href="assets/css/style.css" rel="stylesheet">
+    <style>
+        .blog-post {
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            overflow: hidden;
+        }
+        .blog-post:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .post-image-container {
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+            cursor: pointer;
+        }
+        .post-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .post-image-container:hover .post-image {
+            transform: scale(1.05);
+        }
+        .post-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .post-image-container:hover .post-overlay {
+            opacity: 1;
+        }
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        .card-title a {
+            color: #012970;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .card-title a:hover {
+            color: #0d6efd;
+        }
+        .card-text {
+            color: #6c757d;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .post-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        .post-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .post-stats i {
+            margin-right: 0.3rem;
+        }
+        .btn-novo-post {
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-novo-post:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #dee2e6;
+        }
+    </style>
 </head>
 
 <body>
+    <!-- ======= Header ======= -->
+    <header id="header" class="header fixed-top d-flex align-items-center">
+        <div class="d-flex align-items-center justify-content-between">
+            <a href="index.php" class="logo d-flex align-items-center">
+                <img src="assets/img/Ico_geral.png" alt="Logo">
+                <span class="d-none d-lg-block">Sou + Digital</span>
+            </a>
+            <i class="bi bi-list toggle-sidebar-btn"></i>
+        </div>
 
-  <?php
-    session_start();
-    if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
-        header("Location: ./page/user-login.php");
-        exit;
-    }
-    // Supondo que os dados do usuário estejam armazenados na sessão
-    if (isset($_SESSION['user'])) {
-      $user = $_SESSION['user'];
-      // Log para informar o que está salvo na sessão
-      error_log("Dados do usuário na sessão: " . print_r($user, true));
-    } else {
-      $user = ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
-    }
+        <nav class="header-nav ms-auto">
+            <ul class="d-flex align-items-center">
+                <li class="nav-item dropdown pe-3">
+                    <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+                        <span class="d-none d-md-block dropdown-toggle ps-2">
+                            <?php echo htmlspecialchars($user['name']); ?>
+                        </span>
+                    </a>
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-      $dataChamado = $_POST['dataChamado'];
-      $numeroChamado = $_POST['numeroChamado'];
-      $cliente = $_POST['cliente'];
-      $nomeInformante = $_POST['nomeInformante'];
-      $quantidadePatrimonios = $_POST['quantidadePatrimonios'];
-      $kmInicial = $_POST['kmInicial'];
-      $kmFinal = $_POST['kmFinal'];
-      $horaChegada = $_POST['horaChegada'];
-      $horaSaida = $_POST['horaSaida'];
-      $enderecoPartida = $_POST['enderecoPartida'];
-      $enderecoChegada = $_POST['enderecoChegada'];
-      $informacoesAdicionais = $_POST['informacoesAdicionais'];
-      $arquivoPath = '';
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                        <li class="dropdown-header">
+                            <h6>Nome: <?php echo htmlspecialchars($user['name']); ?></h6>
+                            <span>Usuário: <?php echo htmlspecialchars($user['username']); ?></span>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="page/meu-perfil.php">
+                                <i class="bi bi-person"></i>
+                                <span>Meu Perfil</span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="page/sair.php">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Deslogar</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </header>
 
-      if (isset($_FILES['arquivo']) && $_FILES['arquivo']['error'] == UPLOAD_ERR_OK) {
-        $uploadDir = 'uploads/';
-        if (!is_dir($uploadDir)) {
-          mkdir($uploadDir, 0777, true);
-        }
-        $arquivoPath = $uploadDir . basename($_FILES['arquivo']['name']);
-        move_uploaded_file($_FILES['arquivo']['tmp_name'], $arquivoPath);
-      }
+    <?php include_once 'includes/sidebar.php'; ?>
 
-      $conn = new mysqli('localhost', 'root', '', 'sou_digital');
-      if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-      }
+    <main id="main" class="main">
+        <section class="section">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="card-title m-0">Blog Posts</h5>
+                                <?php if (isset($_SESSION['user']['is_admin']) && $_SESSION['user']['is_admin'] === true): ?>
+                                <a href="page/criar-post.php" class="btn btn-primary btn-novo-post">
+                                    <i class="bi bi-plus-lg"></i> Novo Post
+                                </a>
+                                <?php endif; ?>
+                            </div>
 
-      $stmt = $conn->prepare("INSERT INTO reports (user_id, data_chamado, numero_chamado, cliente, nome_informante, quantidade_patrimonios, km_inicial, km_final, hora_chegada, hora_saida, endereco_partida, endereco_chegada, informacoes_adicionais, arquivo_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-      $stmt->bind_param("issssiiissssss", $user['id'], $dataChamado, $numeroChamado, $cliente, $nomeInformante, $quantidadePatrimonios, $kmInicial, $kmFinal, $horaChegada, $horaSaida, $enderecoPartida, $enderecoChegada, $informacoesAdicionais, $arquivoPath);
+                            <?php if (isset($_SESSION['success'])): ?>
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <?php 
+                                echo $_SESSION['success'];
+                                unset($_SESSION['success']);
+                                ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <?php endif; ?>
 
-      if ($stmt->execute()) {
-        echo "Dados salvos com sucesso!";
-      } else {
-        echo "Erro ao salvar os dados: " . $stmt->error;
-      }
+                            <?php if (isset($_SESSION['error'])): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <?php 
+                                echo $_SESSION['error'];
+                                unset($_SESSION['error']);
+                                ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <?php endif; ?>
 
-      $stmt->close();
-      $conn->close();
-    }
-  ?>
-
-<script>
-  // Armazenar o nome e o ID do usuário logado na sessionStorage
-  sessionStorage.setItem('nomeUsuario', '<?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?>');
-  sessionStorage.setItem('idUsuario', '<?php echo htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8'); ?>');
-</script>
-
-  <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
-
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="./index.php" class="logo d-flex align-items-center">
-      <img src="./assets/img/Ico_geral.png" alt="Logo">
-        <span class="d-none d-lg-block">Sou + Digital</span>
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
-    </div><!-- End Logo -->
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-
-        <li class="nav-item dropdown pe-3">
-
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            
-            <span class="d-none d-md-block dropdown-toggle ps-2">
-              <?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?>
-            </span>
-          </a><!-- End Profile Iamge Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>Nome: <?php echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'); ?></h6>
-              <span> Usuario: <?php echo htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8'); ?></span>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="./page/profile.php">
-                <i class="bi bi-person"></i>
-                <span>Meu Perfil</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="page/logout.php">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Deslogar</span>
-              </a>
-            </li>
-
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
-  </header><!-- End Header -->
-
-  <?php include_once 'includes/sidebar.php'; ?>
-
-  <main id="main" class="main">
-    <section class="section">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="card">
-            <div class="card-body">
-            <div class="pagetitle">
-                <h1>Relatorio de Atendimento</h1>
-                <nav>
-                  <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="index.php">Inicial</a></li>
-                  </ol>
-                </nav>
-              </div><!-- End Page Title -->
-              <form id="scriptForm" enctype="multipart/form-data">
-                <!-- Data do Chamado -->
-                <div class="form-floating mb-3">
-                  <input type="date" class="form-control" id="dataChamado" name="dataChamado" oninput="infoGeral()">
-                  <label for="dataChamado">Data do chamado:</label>
-                </div>
-
-                <!-- Número do Chamado -->
-                <div class="form-floating mb-3">
-                  <input type="number" class="form-control" id="numeroChamado" name="numeroChamado" oninput="infoGeral()">
-                  <label for="numeroChamado">Número do chamado:</label>
-                </div>
-
-                <!-- Cliente -->
-                <div class="form-floating mb-3">
-                  <input type="text" class="form-control" id="cliente" name="cliente" oninput="infoGeral()">
-                  <label for="cliente">Cliente:</label>
-                </div>
-
-                <!-- Nome de quem informou o chamado -->
-                <div class="form-floating mb-3">
-                  <input type="text" class="form-control" id="nomeInformante" name="nomeInformante" oninput="infoGeral()">
-                  <label for="nomeInformante">Nome de quem informou o chamado:</label>
-                </div>
-
-
-                <!-- Quantidade de Patrimônios Tratados -->
-                <div class="form-floating mb-3">
-                  <input type="number" class="form-control" id="quantidadePatrimonios" name="quantidadePatrimonios" oninput="infoGeral()">
-                  <label for="quantidadePatrimonios">Quantidade de patrimônios tratados:</label>
-                </div>
-
-                <!-- KM Inicial e Final -->
-                <div class="form-floating mb-3">
-                  <input type="number" class="form-control" id="kmInicial" name="kmInicial" oninput="infoGeral()">
-                  <label for="kmInicial">KM inicial:</label>
-                </div>
-                <div class="form-floating mb-3">
-                  <input type="number" class="form-control" id="kmFinal" name="kmFinal" oninput="infoGeral()">
-                  <label for="kmFinal">KM final:</label>
-                </div>
-
-                <!-- Horários de Chegada e Saída -->
-                <div class="form-floating mb-3">
-                  <input type="time" class="form-control" id="horaChegada" name="horaChegada" oninput="infoGeral()">
-                  <label for="horaChegada">Horário de chegada no chamado:</label>
-                </div>
-                <div class="form-floating mb-3">
-                  <input type="time" class="form-control" id="horaSaida" name="horaSaida" oninput="infoGeral()">
-                  <label for="horaSaida">Horário de saída do chamado:</label>
-                </div>
-
-                <!-- Endereços -->
-                <div class="form-floating mb-3">
-                  <input type="text" class="form-control" id="enderecoPartida" name="enderecoPartida" oninput="infoGeral()">
-                  <label for="enderecoPartida">Endereço de partida:</label>
-                </div>
-                <div class="form-floating mb-3">
-                  <input type="text" class="form-control" id="enderecoChegada" name="enderecoChegada" oninput="infoGeral()">
-                  <label for="enderecoChegada">Endereço de chegada:</label>
-                </div>
-
-                <!-- Informações Adicionais -->
-                <div class="form-floating mb-3">
-                  <textarea class="form-control" id="informacoesAdicionais" name="informacoesAdicionais" style="height: 250px"
-                    oninput="infoGeral()"></textarea>
-                  <label for="informacoesAdicionais">Breve descrição do chamado:</label>
-                </div>
-
-                <!-- Upload de Arquivo -->
-                <div class="form-floating mb-3">
-                  <input type="file" class="form-control" id="arquivo" name="arquivo" accept=".pdf">
-                  <label for="arquivo">Anexar Rat (PDF):</label>
-                </div>
-
-                <!-- Ações -->
-                <div class="mb-3">
-                  <button type="button" class="btn btn-outline-primary" id="salvarTudo">Salvar e Enviar</button>
-                  <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
-                </div>
-              </form>
-
-              <!-- Modal -->
-              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h1 class="modal-title fs-5" id="exampleModalLabel">Texto Copiado</h1>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <div class="row">
+                                <?php if ($result && $result->num_rows > 0): ?>
+                                    <?php while($post = $result->fetch_assoc()): ?>
+                                        <div class="col-md-6 col-lg-4">
+                                            <div class="card blog-post">
+                                                <?php if ($post['imagem_capa']): ?>
+                                                <a href="page/visualizar-post.php?id=<?php echo $post['id']; ?>" class="post-image-container">
+                                                    <img src="<?php echo htmlspecialchars($post['imagem_capa']); ?>" class="post-image" alt="<?php echo htmlspecialchars($post['titulo']); ?>">
+                                                    <div class="post-overlay"></div>
+                                                </a>
+                                                <?php endif; ?>
+                                                <div class="card-body">
+                                                    <h5 class="card-title">
+                                                        <a href="page/visualizar-post.php?id=<?php echo $post['id']; ?>">
+                                                            <?php echo htmlspecialchars($post['titulo']); ?>
+                                                        </a>
+                                                    </h5>
+                                                    <p class="card-text">
+                                                        <?php 
+                                                        $preview = strip_tags($post['conteudo']);
+                                                        echo strlen($preview) > 150 ? substr($preview, 0, 150) . "..." : $preview;
+                                                        ?>
+                                                    </p>
+                                                    <div class="d-flex justify-content-between align-items-center post-meta">
+                                                        <div>
+                                                            Por <?php echo htmlspecialchars($post['author_name']); ?><br>
+                                                            <small><?php echo date('d/m/Y H:i', strtotime($post['data_criacao'])); ?></small>
+                                                        </div>
+                                                        <div class="post-stats">
+                                                            <span>
+                                                                <i class="bi bi-chat-dots"></i><?php echo $post['total_comments']; ?>
+                                                            </span>
+                                                            <span>
+                                                                <i class="bi bi-heart"></i><?php echo $post['total_reactions']; ?>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <div class="col-12">
+                                        <div class="empty-state">
+                                            <i class="bi bi-journal-text"></i>
+                                            <p>Nenhum post encontrado.</p>
+                                            <?php if (isset($_SESSION['user']['is_admin']) && $_SESSION['user']['is_admin'] === true): ?>
+                                            <a href="page/criar-post.php" class="btn btn-primary btn-novo-post mt-3">
+                                                <i class="bi bi-plus-lg"></i> Criar Primeiro Post
+                                            </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                      <p id="geralResp0"></p>
-                      <p id="geralResp1"></p>
-                      <p id="geralResp2"></p>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Fechar</button>
-                    </div>
-                  </div>
                 </div>
-              </div>
-
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+        </section>
+    </main>
 
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
-  <!-- ======= Footer ======= -->
-  <footer id="footer" class="footer">
-    <div class="copyright">
-      &copy; Copyright <strong><span>Patrick C Cruz</span></strong>. Todos os direitos Reservado
-    </div>
-    <div class="credits">
-      Feito pelo <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C
-        Cruz</a>
-    </div>
-  </footer><!-- End Footer -->
+    <!-- Vendor JS Files -->
+    <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/chart.js/chart.umd.js"></script>
+    <script src="assets/vendor/echarts/echarts.min.js"></script>
+    <script src="assets/vendor/quill/quill.min.js"></script>
+    <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
+    <script src="assets/vendor/tinymce/tinymce.min.js"></script>
+    <script src="assets/vendor/php-email-form/validate.js"></script>
 
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
-      class="bi bi-arrow-up-short"></i></a>
-
-  <!-- Vendor JS Files -->
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="script.js"></script>
-  <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
-
-  <!-- Template Main JS File -->
-  <script src="assets/js/main.js"></script>
-
-  <script>
-  // Função para mostrar modal de sucesso
-  function mostrarSucesso(mensagem) {
-      document.getElementById('mensagemSucesso').textContent = mensagem;
-      const modal = new bootstrap.Modal(document.getElementById('sucessoModal'));
-      modal.show();
-  }
-
-  // Função para mostrar modal de erro
-  function mostrarErro(mensagem) {
-      document.getElementById('mensagemErro').textContent = mensagem;
-      const modal = new bootstrap.Modal(document.getElementById('erroModal'));
-      modal.show();
-  }
-
-  // Evento do botão Salvar no Banco
-  document.getElementById('salvarBanco').addEventListener('click', function(e) {
-      e.preventDefault();
-      const formData = new FormData(document.getElementById('scriptForm'));
-      
-      fetch('salvar_dados.php', {
-          method: 'POST',
-          body: formData
-      })
-      .then(response => response.text())
-      .then(data => {
-          if(data.includes("sucesso")) {
-              mostrarSucesso("Dados salvos com sucesso no banco de dados!");
-          } else {
-              mostrarErro("Erro ao salvar os dados: " + data);
-          }
-      })
-      .catch(error => {
-          console.error('Erro:', error);
-          mostrarErro("Erro ao salvar os dados. Por favor, tente novamente.");
-      });
-  });
-
-  // Evento do botão Enviar para Discord
-  document.getElementById('enviarDiscord').addEventListener('click', function(e) {
-      e.preventDefault();
-      const formData = JSON.parse(localStorage.getItem("formData"));
-      if (formData) {
-          enviarParaDiscord()
-              .then(() => {
-                  mostrarSucesso("Dados enviados com sucesso para o Discord!");
-              })
-              .catch(error => {
-                  mostrarErro("Erro ao enviar para o Discord: " + error.message);
-              });
-      } else {
-          mostrarErro("Nenhum dado encontrado para enviar ao Discord.");
-      }
-  });
-  </script>
-
-  <!-- Modal de Sucesso -->
-  <div class="modal fade" id="sucessoModal" tabindex="-1" aria-labelledby="sucessoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-success text-white">
-          <h5 class="modal-title" id="sucessoModalLabel">Sucesso!</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p id="mensagemSucesso"></p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-success" data-bs-dismiss="modal">Fechar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal de Erro -->
-  <div class="modal fade" id="erroModal" tabindex="-1" aria-labelledby="erroModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title" id="erroModalLabel">Erro!</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p id="mensagemErro"></p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
+    <!-- Template Main JS File -->
+    <script src="assets/js/main.js"></script>
 </body>
-
 </html>
