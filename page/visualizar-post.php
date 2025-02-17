@@ -19,6 +19,13 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Verificar e adicionar coluna parent_id se não existir
+$check_column = $conn->query("SHOW COLUMNS FROM blog_comentarios LIKE 'parent_id'");
+if ($check_column->num_rows === 0) {
+    $conn->query("ALTER TABLE blog_comentarios ADD COLUMN parent_id INT NULL");
+    $conn->query("ALTER TABLE blog_comentarios ADD CONSTRAINT fk_parent FOREIGN KEY (parent_id) REFERENCES blog_comentarios(id) ON DELETE CASCADE");
+}
+
 // Buscar dados do post
 $query = "SELECT p.*, u.name as autor_nome 
           FROM blog_posts p 
@@ -62,9 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['reacao'])) {
 // Processar novo comentário
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['comentario'])) {
     $comentario = trim($_POST['comentario']);
+    $parent_id = isset($_POST['parent_id']) ? intval($_POST['parent_id']) : null;
+    
     if (!empty($comentario)) {
-        $stmt = $conn->prepare("INSERT INTO blog_comentarios (post_id, user_id, comentario) VALUES (?, ?, ?)");
-        $stmt->bind_param("iis", $post_id, $user['id'], $comentario);
+        $stmt = $conn->prepare("INSERT INTO blog_comentarios (post_id, user_id, comentario, parent_id) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iisi", $post_id, $user['id'], $comentario, $parent_id);
         $stmt->execute();
         header("Location: visualizar-post.php?id=" . $post_id);
         exit;
@@ -88,13 +97,35 @@ $stmt->execute();
 $reacao_usuario = $stmt->get_result()->fetch_assoc();
 
 // Buscar comentários do post
-$query = "SELECT c.*, u.name as autor_nome 
-          FROM blog_comentarios c 
-          JOIN users u ON c.user_id = u.id 
-          WHERE c.post_id = ? 
-          ORDER BY c.data_criacao DESC";
+$query = "WITH RECURSIVE CommentHierarchy AS (
+    -- Comentários base (sem parent_id)
+    SELECT 
+        c.*, 
+        u.name as autor_nome,
+        0 as nivel,
+        CAST(c.id AS CHAR(200)) as path
+    FROM blog_comentarios c
+    JOIN users u ON c.user_id = u.id
+    WHERE c.post_id = ? AND c.parent_id IS NULL
+    
+    UNION ALL
+    
+    -- Respostas recursivas
+    SELECT 
+        c.*,
+        u.name as autor_nome,
+        ch.nivel + 1,
+        CONCAT(ch.path, ',', c.id) as path
+    FROM blog_comentarios c
+    JOIN users u ON c.user_id = u.id
+    JOIN CommentHierarchy ch ON c.parent_id = ch.id
+    WHERE c.post_id = ?
+)
+SELECT * FROM CommentHierarchy
+ORDER BY path, data_criacao ASC";
+
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $post_id);
+$stmt->bind_param("ii", $post_id, $post_id);
 $stmt->execute();
 $comentarios = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -167,6 +198,31 @@ $links = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             margin-bottom: 1rem;
             border-radius: 10px;
             background-color: #f8f9fa;
+        }
+        .comment-replies {
+            margin-left: 2rem;
+            margin-top: 1rem;
+        }
+        .reply-form {
+            margin-top: 1rem;
+            display: none;
+        }
+        .reply-button {
+            font-size: 0.9rem;
+            color: #6c757d;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .reply-button:hover {
+            color: #0d6efd;
+        }
+        .nested-comment {
+            border-left: 2px solid #dee2e6;
+            margin-left: 2rem;
+            padding-left: 1rem;
+            margin-top: 1rem;
         }
         .links-section {
             margin-top: 2rem;
@@ -332,17 +388,52 @@ $links = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                                     <button type="submit" class="btn btn-primary mt-2">Comentar</button>
                                 </form>
 
-                                <?php foreach ($comentarios as $comentario): ?>
-                                <div class="comment">
-                                    <div class="d-flex justify-content-between">
-                                        <h6><?php echo htmlspecialchars($comentario['autor_nome']); ?></h6>
-                                        <small class="text-muted">
-                                            <?php echo date('d/m/Y H:i', strtotime($comentario['data_criacao'])); ?>
-                                        </small>
+                                <?php
+                                $previous_level = 0;
+                                foreach ($comentarios as $comentario): 
+                                    // Fecha as divs dos níveis anteriores quando volta para um nível menor
+                                    if ($comentario['nivel'] < $previous_level) {
+                                        for ($i = 0; $i < ($previous_level - $comentario['nivel']); $i++) {
+                                            echo "</div>";
+                                        }
+                                    }
+                                    
+                                    // Abre uma nova div para o comentário atual
+                                    if ($comentario['nivel'] > 0) {
+                                        echo '<div class="nested-comment">';
+                                    }
+                                ?>
+                                    <div class="comment">
+                                        <div class="d-flex justify-content-between">
+                                            <h6><?php echo htmlspecialchars($comentario['autor_nome']); ?></h6>
+                                            <small class="text-muted">
+                                                <?php echo date('d/m/Y H:i', strtotime($comentario['data_criacao'])); ?>
+                                            </small>
+                                        </div>
+                                        <p><?php echo nl2br(htmlspecialchars($comentario['comentario'])); ?></p>
+                                        
+                                        <button type="button" class="reply-button" onclick="toggleReplyForm(<?php echo $comentario['id']; ?>)">
+                                            <i class="bi bi-reply"></i> Responder
+                                        </button>
+
+                                        <form method="POST" class="reply-form" id="reply-form-<?php echo $comentario['id']; ?>">
+                                            <div class="form-group">
+                                                <textarea name="comentario" class="form-control" rows="2" placeholder="Escreva sua resposta..." required></textarea>
+                                                <input type="hidden" name="parent_id" value="<?php echo $comentario['id']; ?>">
+                                            </div>
+                                            <button type="submit" class="btn btn-sm btn-primary mt-2">Enviar resposta</button>
+                                            <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="toggleReplyForm(<?php echo $comentario['id']; ?>)">Cancelar</button>
+                                        </form>
                                     </div>
-                                    <p><?php echo nl2br(htmlspecialchars($comentario['comentario'])); ?></p>
-                                </div>
-                                <?php endforeach; ?>
+                                <?php 
+                                    $previous_level = $comentario['nivel'];
+                                endforeach; 
+                                
+                                // Fecha as divs restantes
+                                for ($i = 0; $i < $previous_level; $i++) {
+                                    echo "</div>";
+                                }
+                                ?>
                             </div>
                         </div>
                     </div>
@@ -367,5 +458,18 @@ $links = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
     <!-- Template Main JS File -->
     <script src="../assets/js/main.js"></script>
+    <script>
+    function toggleReplyForm(commentId) {
+        const form = document.getElementById(`reply-form-${commentId}`);
+        if (form.style.display === 'block') {
+            form.style.display = 'none';
+        } else {
+            // Esconde todos os outros formulários de resposta
+            document.querySelectorAll('.reply-form').forEach(f => f.style.display = 'none');
+            form.style.display = 'block';
+            form.querySelector('textarea').focus();
+        }
+    }
+    </script>
 </body>
 </html> 

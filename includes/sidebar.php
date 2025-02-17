@@ -22,10 +22,21 @@ $basePath = $isSubfolder ? '../' : '';
     <!-- Categoria: Ferramentas -->
     <li class="nav-heading">Ferramentas</li>
     <li class="nav-item">
-      <a class="nav-link" href="<?php echo $basePath; ?>page/gerar-script.php">
-        <i class="bi bi-journal-text"></i>
-        <span>Gerador Script</span>
+      <a class="nav-link collapsed" data-bs-target="#scripts-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-journal-text"></i><span>Scripts</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
+      <ul id="scripts-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="<?php echo $basePath; ?>page/gerar-script.php">
+            <i class="bi bi-circle"></i><span>Gerar Script</span>
+          </a>
+        </li>
+        <li>
+          <a href="<?php echo $basePath; ?>page/meus-scripts.php">
+            <i class="bi bi-circle"></i><span>Meus Scripts</span>
+          </a>
+        </li>
+      </ul>
     </li>
 
     <!-- Categoria: Reembolsos -->

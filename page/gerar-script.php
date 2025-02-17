@@ -85,6 +85,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <!-- Template Main CSS File -->
     <link href="../assets/css/style.css" rel="stylesheet">
+
+    <style>
+        .form-floating > .form-control[type="file"] {
+            height: calc(3.5rem + 2px);
+            line-height: 1.25;
+        }
+    </style>
 </head>
 
 <body>
@@ -150,70 +157,70 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </nav>
                             </div>
 
-                            <form id="scriptForm" enctype="multipart/form-data">
+                            <form id="scriptForm" enctype="multipart/form-data" method="POST" action="salvar_dados.php">
                                 <!-- Data do Chamado -->
                                 <div class="form-floating mb-3">
-                                    <input type="date" class="form-control" id="dataChamado" name="dataChamado" oninput="infoGeral()">
+                                    <input type="date" class="form-control" id="dataChamado" name="dataChamado">
                                     <label for="dataChamado">Data do chamado:</label>
                                 </div>
 
                                 <!-- Número do Chamado -->
                                 <div class="form-floating mb-3">
-                                    <input type="number" class="form-control" id="numeroChamado" name="numeroChamado" oninput="infoGeral()">
+                                    <input type="number" class="form-control" id="numeroChamado" name="numeroChamado">
                                     <label for="numeroChamado">Número do chamado:</label>
                                 </div>
 
                                 <!-- Cliente -->
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="cliente" name="cliente" oninput="infoGeral()">
+                                    <input type="text" class="form-control" id="cliente" name="cliente">
                                     <label for="cliente">Cliente:</label>
                                 </div>
 
                                 <!-- Nome de quem informou o chamado -->
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="nomeInformante" name="nomeInformante" oninput="infoGeral()">
+                                    <input type="text" class="form-control" id="nomeInformante" name="nomeInformante">
                                     <label for="nomeInformante">Nome de quem informou o chamado:</label>
                                 </div>
 
                                 <!-- Quantidade de Patrimônios Tratados -->
                                 <div class="form-floating mb-3">
-                                    <input type="number" class="form-control" id="quantidadePatrimonios" name="quantidadePatrimonios" oninput="infoGeral()">
+                                    <input type="number" class="form-control" id="quantidadePatrimonios" name="quantidadePatrimonios">
                                     <label for="quantidadePatrimonios">Quantidade de patrimônios tratados:</label>
                                 </div>
 
                                 <!-- KM Inicial e Final -->
                                 <div class="form-floating mb-3">
-                                    <input type="number" class="form-control" id="kmInicial" name="kmInicial" oninput="infoGeral()">
+                                    <input type="number" class="form-control" id="kmInicial" name="kmInicial">
                                     <label for="kmInicial">KM inicial:</label>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <input type="number" class="form-control" id="kmFinal" name="kmFinal" oninput="infoGeral()">
+                                    <input type="number" class="form-control" id="kmFinal" name="kmFinal">
                                     <label for="kmFinal">KM final:</label>
                                 </div>
 
                                 <!-- Horários de Chegada e Saída -->
                                 <div class="form-floating mb-3">
-                                    <input type="time" class="form-control" id="horaChegada" name="horaChegada" oninput="infoGeral()">
+                                    <input type="time" class="form-control" id="horaChegada" name="horaChegada">
                                     <label for="horaChegada">Horário de chegada no chamado:</label>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <input type="time" class="form-control" id="horaSaida" name="horaSaida" oninput="infoGeral()">
+                                    <input type="time" class="form-control" id="horaSaida" name="horaSaida">
                                     <label for="horaSaida">Horário de saída do chamado:</label>
                                 </div>
 
                                 <!-- Endereços -->
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="enderecoPartida" name="enderecoPartida" oninput="infoGeral()">
+                                    <input type="text" class="form-control" id="enderecoPartida" name="enderecoPartida">
                                     <label for="enderecoPartida">Endereço de partida:</label>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="enderecoChegada" name="enderecoChegada" oninput="infoGeral()">
+                                    <input type="text" class="form-control" id="enderecoChegada" name="enderecoChegada">
                                     <label for="enderecoChegada">Endereço de chegada:</label>
                                 </div>
 
                                 <!-- Informações Adicionais -->
                                 <div class="form-floating mb-3">
-                                    <textarea class="form-control" id="informacoesAdicionais" name="informacoesAdicionais" style="height: 250px" oninput="infoGeral()"></textarea>
+                                    <textarea class="form-control" id="informacoesAdicionais" name="informacoesAdicionais" style="height: 250px"></textarea>
                                     <label for="informacoesAdicionais">Breve descrição do chamado:</label>
                                 </div>
 
@@ -251,5 +258,57 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- Template Main JS File -->
     <script src="../assets/js/main.js"></script>
     <script src="../script.js"></script>
+
+    <!-- Modal de Sucesso -->
+    <div class="modal fade" id="sucessoModal" tabindex="-1" aria-labelledby="sucessoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sucessoModalLabel">Sucesso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="mensagemSucesso"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Erro -->
+    <div class="modal fade" id="erroModal" tabindex="-1" aria-labelledby="erroModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="erroModalLabel">Erro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="mensagemErro"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Função para mostrar modal de sucesso
+    function mostrarSucesso(mensagem) {
+        document.getElementById('mensagemSucesso').textContent = mensagem;
+        const modal = new bootstrap.Modal(document.getElementById('sucessoModal'));
+        modal.show();
+    }
+
+    // Função para mostrar modal de erro
+    function mostrarErro(mensagem) {
+        document.getElementById('mensagemErro').textContent = mensagem;
+        const modal = new bootstrap.Modal(document.getElementById('erroModal'));
+        modal.show();
+    }
+    </script>
 </body>
 </html> 

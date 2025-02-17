@@ -38,18 +38,19 @@ try {
         $id = filter_var($_POST['id'], FILTER_VALIDATE_INT);
         $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
         $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+        $is_admin = isset($_POST['is_admin']) ? 1 : 0;
 
         if ($id === false || empty($name) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new Exception("Dados inválidos fornecidos");
         }
 
         // Atualizar usuário
-        $stmt = $conn->prepare("UPDATE users SET name=?, email=? WHERE id=?");
+        $stmt = $conn->prepare("UPDATE users SET name=?, email=?, is_admin=? WHERE id=?");
         if (!$stmt) {
             throw new Exception("Erro na preparação da consulta: " . $conn->error);
         }
 
-        $stmt->bind_param("ssi", $name, $email, $id);
+        $stmt->bind_param("ssii", $name, $email, $is_admin, $id);
         if (!$stmt->execute()) {
             throw new Exception("Erro ao atualizar usuário: " . $stmt->error);
         }
@@ -68,7 +69,7 @@ try {
             throw new Exception("ID de usuário inválido");
         }
 
-        $stmt = $conn->prepare("SELECT id, name, email FROM users WHERE id=?");
+        $stmt = $conn->prepare("SELECT id, name, email, is_admin FROM users WHERE id=?");
         if (!$stmt) {
             throw new Exception("Erro na preparação da consulta: " . $conn->error);
         }
@@ -228,6 +229,16 @@ function h($str) {
                                            value="<?php echo h($user['email']); ?>" required>
                                     <div class="invalid-feedback">
                                         Por favor, insira um email válido.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_admin" name="is_admin" 
+                                               <?php echo ($user['is_admin'] ? 'checked' : ''); ?>>
+                                        <label class="form-check-label" for="is_admin">
+                                            Usuário Administrador
+                                        </label>
                                     </div>
                                 </div>
 
