@@ -8,7 +8,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     exit;
 }
 
-// Verificação de permissão de administrador (ajuste conforme sua lógica de permissões)
+// Verificação de permissão de administrador
 if (!isset($_SESSION['user']['is_admin']) || $_SESSION['user']['is_admin'] !== true) {
     header('Location: ../index.php');
     exit;
@@ -118,7 +118,7 @@ $conn->close();
   <header id="header" class="header fixed-top d-flex align-items-center">
     <div class="d-flex align-items-center justify-content-between">
       <a href="../index.php" class="logo d-flex align-items-center">
-        <img src="../assets/img/logo.png" alt="Logo">
+      <img src="../assets/img/Ico_geral.png" alt="Logo">
         <span class="d-none d-lg-block">Sou + Digital</span>
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
@@ -128,7 +128,6 @@ $conn->close();
       <ul class="d-flex align-items-center">
         <li class="nav-item dropdown pe-3">
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="<?php echo isset($user['profile_image']) ? '../uploads/' . htmlspecialchars($user['profile_image']) : '../assets/img/sem_foto.png'; ?>" alt="Profile" class="rounded-circle">
             <span class="d-none d-md-block dropdown-toggle ps-2"><?php echo isset($user['name']) ? htmlspecialchars($user['name']) : 'Usuário'; ?></span>
           </a>
 
@@ -157,29 +156,7 @@ $conn->close();
     </nav>
   </header>
 
-  <!-- ======= Sidebar ======= -->
-  <aside id="sidebar" class="sidebar">
-    <ul class="sidebar-nav" id="sidebar-nav">
-      <li class="nav-item">
-        <a class="nav-link" href="../index.php">
-          <i class="bi bi-journal-text"></i>
-          <span>Gerador Script</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="reembolso.php">
-          <i class="bx bx-money"></i>
-          <span>Solicitação de reembolso</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="view-reembolsos.php">
-          <i class="bx bx-list-ul"></i>
-          <span>Visualizar Reembolsos</span>
-        </a>
-      </li>
-    </ul>
-  </aside>
+  <?php include_once '../includes/sidebar.php'; ?>
 
   <main id="main" class="main">
     <div class="pagetitle">

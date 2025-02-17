@@ -142,29 +142,7 @@
     </nav>
   </header>
 
-  <!-- ======= Sidebar ======= -->
-  <aside id="sidebar" class="sidebar">
-    <ul class="sidebar-nav" id="sidebar-nav">
-      <li class="nav-item">
-        <a class="nav-link" href="../index.php">
-          <i class="bi bi-journal-text"></i>
-          <span>Gerador Script</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link active" href="reembolso.php">
-          <i class="bx bx-money"></i>
-          <span>Solicitação de reembolso</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="view-reembolsos.php">
-          <i class="bx bx-list-ul"></i>
-          <span>Visualizar Reembolsos</span>
-        </a>
-      </li>
-    </ul>
-  </aside>
+  <?php include_once '../includes/sidebar.php'; ?>
 
   <main id="main" class="main">
     <section class="section">

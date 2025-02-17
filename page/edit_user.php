@@ -146,7 +146,7 @@ function h($str) {
 <!-- ======= Header ======= -->
 <header id="header" class="header fixed-top d-flex align-items-center">
     <div class="d-flex align-items-center justify-content-between">
-        <a href="./index.php" class="logo d-flex align-items-center">
+        <a href="../index.php" class="logo d-flex align-items-center">
             <img src="../assets/img/Ico_geral.png" alt="Logo">
             <span class="d-none d-lg-block">Sou + Digital</span>
         </a>
@@ -185,29 +185,7 @@ function h($str) {
     </nav>
 </header><!-- End Header -->
 
-<!-- ======= Sidebar ======= -->
-<aside id="sidebar" class="sidebar">
-    <ul class="sidebar-nav" id="sidebar-nav">
-        <li class="nav-item">
-            <a class="nav-link" href="../index.php">
-                <i class="bi bi-journal-text"></i>
-                <span>Gerador Script</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="reembolso.php">
-                <i class="bx bx-money"></i>
-                <span>Solicitação de reembolso</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="view-reembolsos.php">
-                <i class="bx bx-list-ul"></i>
-                <span>Visualizar Reembolsos</span>
-            </a>
-        </li>
-    </ul>
-</aside>
+<?php include_once '../includes/sidebar.php'; ?>
 
 <main id="main" class="main">
     <div class="pagetitle">
