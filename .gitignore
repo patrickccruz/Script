@@ -1,1 +1,7 @@
 /uploads
+node_modules/.bin/html-minifier-terser.cmd
+/node_modules
+/node_modules
+/node_modules/.bin
+/node_modules
+/node_modules
