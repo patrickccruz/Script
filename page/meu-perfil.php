@@ -1,5 +1,13 @@
 <?php
 session_start();
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
+    header("Location: autenticacao.php");
+    exit;
+}
+
+$is_page = true; // Indica que estamos em uma página dentro do diretório 'page'
+include_once '../includes/header.php';
+
 require_once '../db.php';
 
 // Verificação de autenticação

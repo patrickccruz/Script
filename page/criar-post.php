@@ -5,11 +5,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
     exit;
 }
 
-if (!isset($_SESSION['user']['is_admin']) || $_SESSION['user']['is_admin'] != true) {
-    header("Location: ../index.php");
-    exit;
-}
-
+require_once '../includes/upload_functions.php';
 $user = $_SESSION['user'];
 
 // Processar o formulário quando enviado
@@ -33,27 +29,62 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Upload da imagem
     $imagem_capa = '';
     if (isset($_FILES['imagem_capa']) && $_FILES['imagem_capa']['error'] == 0) {
-        $upload_dir = '../uploads/blog/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
-        }
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime_type = $finfo->file($_FILES['imagem_capa']['tmp_name']);
 
-        $file_extension = strtolower(pathinfo($_FILES['imagem_capa']['name'], PATHINFO_EXTENSION));
-        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
-
-        if (!in_array($file_extension, $allowed_extensions)) {
+        if (!is_allowed_file_type($mime_type, $allowed_types)) {
             $_SESSION['error'] = "Tipo de arquivo não permitido. Use apenas imagens (JPG, PNG, GIF).";
             header("Location: " . $_SERVER['PHP_SELF']);
             exit;
         }
 
-        $new_filename = uniqid() . '.' . $file_extension;
-        $upload_path = $upload_dir . $new_filename;
+        // Primeiro inserir o post para obter o ID
+        $stmt = $conn->prepare("INSERT INTO blog_posts (user_id, titulo, conteudo, status, data_criacao) VALUES (?, ?, ?, 'pendente', NOW())");
+        $stmt->bind_param("iss", $user['id'], $titulo, $conteudo);
+        
+        if ($stmt->execute()) {
+            $post_id = $conn->insert_id;
+            
+            // Gerar nome único e mover arquivo
+            $new_filename = generate_unique_filename($_FILES['imagem_capa']['name'], 'cover_');
+            $upload_path = get_upload_path('blog', ['post_id' => $post_id]);
+            $full_path = $upload_path . '/' . $new_filename;
 
-        if (move_uploaded_file($_FILES['imagem_capa']['tmp_name'], $upload_path)) {
-            $imagem_capa = 'uploads/blog/' . $new_filename;
+            if (move_uploaded_file_safe($_FILES['imagem_capa']['tmp_name'], $full_path)) {
+                $imagem_capa = str_replace('../', '', $full_path);
+                
+                // Atualizar o post com o caminho da imagem
+                $stmt = $conn->prepare("UPDATE blog_posts SET imagem_capa = ? WHERE id = ?");
+                $stmt->bind_param("si", $imagem_capa, $post_id);
+                $stmt->execute();
+
+                // Inserir links
+                if (!empty($links)) {
+                    $stmt = $conn->prepare("INSERT INTO blog_links (post_id, url, descricao) VALUES (?, ?, ?)");
+                    foreach ($links as $i => $url) {
+                        if (!empty($url) && !empty($links_descricao[$i])) {
+                            $stmt->bind_param("iss", $post_id, $url, $links_descricao[$i]);
+                            $stmt->execute();
+                        }
+                    }
+                }
+
+                $_SESSION['success'] = "Post criado com sucesso!";
+                header("Location: gerenciar-posts.php");
+                exit;
+            } else {
+                // Se falhar o upload da imagem, remove o post
+                $stmt = $conn->prepare("DELETE FROM blog_posts WHERE id = ?");
+                $stmt->bind_param("i", $post_id);
+                $stmt->execute();
+                
+                $_SESSION['error'] = "Erro ao fazer upload da imagem.";
+                header("Location: " . $_SERVER['PHP_SELF']);
+                exit;
+            }
         } else {
-            $_SESSION['error'] = "Erro ao fazer upload da imagem.";
+            $_SESSION['error'] = "Erro ao criar o post.";
             header("Location: " . $_SERVER['PHP_SELF']);
             exit;
         }
@@ -62,37 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: " . $_SERVER['PHP_SELF']);
         exit;
     }
-
-    // Inserir post
-    $stmt = $conn->prepare("INSERT INTO blog_posts (user_id, titulo, conteudo, imagem_capa) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("isss", $user['id'], $titulo, $conteudo, $imagem_capa);
-    
-    if ($stmt->execute()) {
-        $post_id = $conn->insert_id;
-
-        // Inserir links
-        if (!empty($links)) {
-            $stmt = $conn->prepare("INSERT INTO blog_links (post_id, url, descricao) VALUES (?, ?, ?)");
-            foreach ($links as $i => $url) {
-                if (!empty($url) && !empty($links_descricao[$i])) {
-                    $stmt->bind_param("iss", $post_id, $url, $links_descricao[$i]);
-                    $stmt->execute();
-                }
-            }
-        }
-
-        $_SESSION['success'] = "Post criado com sucesso!";
-        header("Location: visualizar-post.php?id=" . $post_id);
-        exit;
-    } else {
-        $_SESSION['error'] = "Erro ao criar o post: " . $conn->error;
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit;
-    }
-
-    $stmt->close();
-    $conn->close();
 }
+
+$is_page = true;
+include_once '../includes/header.php';
 ?>
 
 <!DOCTYPE html>
@@ -152,51 +156,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <body>
-    <!-- ======= Header ======= -->
-    <header id="header" class="header fixed-top d-flex align-items-center">
-        <div class="d-flex align-items-center justify-content-between">
-            <a href="../index.php" class="logo d-flex align-items-center">
-                <img src="../assets/img/Ico_geral.png" alt="Logo">
-                <span class="d-none d-lg-block">Sou + Digital</span>
-            </a>
-            <i class="bi bi-list toggle-sidebar-btn"></i>
-        </div>
-
-        <nav class="header-nav ms-auto">
-            <ul class="d-flex align-items-center">
-                <li class="nav-item dropdown pe-3">
-                    <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                        <span class="d-none d-md-block dropdown-toggle ps-2">
-                            <?php echo htmlspecialchars($user['name']); ?>
-                        </span>
-                    </a>
-
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-                        <li class="dropdown-header">
-                            <h6>Nome: <?php echo htmlspecialchars($user['name']); ?></h6>
-                            <span>Usuário: <?php echo htmlspecialchars($user['username']); ?></span>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="meu-perfil.php">
-                                <i class="bi bi-person"></i>
-                                <span>Meu Perfil</span>
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="sair.php">
-                                <i class="bi bi-box-arrow-right"></i>
-                                <span>Deslogar</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
-    </header>
-
-    <?php include_once '../includes/sidebar.php'; ?>
+    <?php 
+    include_once '../includes/sidebar.php'; 
+    ?>
 
     <main id="main" class="main">
         <section class="section">
@@ -223,6 +185,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                             <?php endif; ?>
+
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                Seu post será revisado por um administrador antes de ser publicado.
+                            </div>
 
                             <form method="POST" enctype="multipart/form-data" action="<?php echo $_SERVER['PHP_SELF']; ?>">
                                 <div class="mb-3">
@@ -263,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </button>
 
                                 <div class="mt-4">
-                                    <button type="submit" class="btn btn-primary">Publicar</button>
+                                    <button type="submit" class="btn btn-primary">Enviar para Aprovação</button>
                                     <a href="../index.php" class="btn btn-secondary">Cancelar</a>
                                 </div>
                             </form>

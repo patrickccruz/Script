@@ -40,10 +40,16 @@
 <body>
   <?php
     session_start();
+    require_once '../includes/upload_functions.php';
+
     if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
-        header("Location: ./autenticacao.php");
+        header("Location: autenticacao.php");
         exit;
     }
+
+    $is_page = true; // Indica que estamos em uma página dentro do diretório 'page'
+    include_once '../includes/header.php';
+
     if (isset($_SESSION['user'])) {
       $user = $_SESSION['user'];
       error_log("Dados do usuário na sessão: " . print_r($user, true));
@@ -52,51 +58,75 @@
     }
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-      $dataChamado = $_POST['dataChamado'];
-      $numeroChamado = $_POST['numeroChamado'];
-      $informacoesAdicionais = $_POST['informacoesAdicionais'];
-      $arquivoPath = '';
-
-      // Processamento de múltiplos arquivos
-      if (isset($_FILES['arquivos'])) {
-        $uploadDir = '../uploads/';
-        if (!is_dir($uploadDir)) {
-          mkdir($uploadDir, 0777, true);
-        }
-        
-        $arquivoPaths = array();
-        $fileCount = count($_FILES['arquivos']['name']);
-        
-        for($i = 0; $i < $fileCount; $i++) {
-          if ($_FILES['arquivos']['error'][$i] == UPLOAD_ERR_OK) {
-            $fileName = basename($_FILES['arquivos']['name'][$i]);
-            $targetPath = $uploadDir . $fileName;
-            
-            if (move_uploaded_file($_FILES['arquivos']['tmp_name'][$i], $targetPath)) {
-              $arquivoPaths[] = $targetPath;
-            }
-          }
-        }
-        
-        $arquivoPath = implode(',', $arquivoPaths);
-      }
-
       $conn = new mysqli('localhost', 'root', '', 'sou_digital');
       if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
       }
 
-      $stmt = $conn->prepare("INSERT INTO reembolsos (user_id, data_chamado, numero_chamado, informacoes_adicionais, arquivo_path) VALUES (?, ?, ?, ?, ?)");
-      $stmt->bind_param("isiss", $user['id'], $dataChamado, $numeroChamado, $informacoesAdicionais, $arquivoPath);
+      try {
+        $dataChamado = $_POST['dataChamado'];
+        $numeroChamado = $_POST['numeroChamado'];
+        $informacoesAdicionais = $_POST['informacoesAdicionais'];
 
-      if ($stmt->execute()) {
-        echo "Dados salvos com sucesso!";
-      } else {
-        echo "Erro ao salvar os dados: " . $stmt->error;
+        // Primeiro inserir o reembolso para obter o ID
+        $stmt = $conn->prepare("INSERT INTO reembolsos (user_id, data_chamado, numero_chamado, informacoes_adicionais) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $user['id'], $dataChamado, $numeroChamado, $informacoesAdicionais);
+
+        if (!$stmt->execute()) {
+          throw new Exception("Erro ao salvar reembolso: " . $stmt->error);
+        }
+
+        $reembolso_id = $conn->insert_id;
+        $arquivoPaths = array();
+
+        // Processamento de múltiplos arquivos
+        if (isset($_FILES['arquivos'])) {
+          $allowed_types = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/avi', 'video/quicktime'];
+          $upload_path = get_upload_path('reimbursement', ['reimbursement_id' => $reembolso_id]);
+          
+          $fileCount = count($_FILES['arquivos']['name']);
+          
+          for($i = 0; $i < $fileCount; $i++) {
+            if ($_FILES['arquivos']['error'][$i] == UPLOAD_ERR_OK) {
+              // Verificar tipo do arquivo
+              $finfo = new finfo(FILEINFO_MIME_TYPE);
+              $mime_type = $finfo->file($_FILES['arquivos']['tmp_name'][$i]);
+              
+              if (!is_allowed_file_type($mime_type, $allowed_types)) {
+                continue; // Pula arquivos não permitidos
+              }
+
+              // Gerar nome único para o arquivo
+              $new_filename = generate_unique_filename($_FILES['arquivos']['name'][$i], 'reembolso_');
+              $full_path = $upload_path . '/' . $new_filename;
+              
+              if (move_uploaded_file_safe($_FILES['arquivos']['tmp_name'][$i], $full_path)) {
+                $arquivoPaths[] = str_replace('../', '', $full_path);
+              }
+            }
+          }
+        }
+
+        // Atualizar reembolso com os caminhos dos arquivos
+        if (!empty($arquivoPaths)) {
+          $arquivo_path = implode(',', $arquivoPaths);
+          $stmt = $conn->prepare("UPDATE reembolsos SET arquivo_path = ? WHERE id = ?");
+          $stmt->bind_param("si", $arquivo_path, $reembolso_id);
+          
+          if (!$stmt->execute()) {
+            throw new Exception("Erro ao atualizar caminhos dos arquivos: " . $stmt->error);
+          }
+        }
+
+        $_SESSION['success'] = "Reembolso solicitado com sucesso!";
+        header("Location: meus-reembolsos.php");
+        exit;
+
+      } catch (Exception $e) {
+        $_SESSION['error'] = $e->getMessage();
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
       }
-
-      $stmt->close();
-      $conn->close();
     }
   ?>
 
@@ -164,19 +194,13 @@
                 <!-- Data do Chamado -->
                 <div class="form-floating mb-3">
                   <input type="date" class="form-control" id="dataChamado" name="dataChamado" required>
-                  <label for="dataChamado">Data do chamado:</label>
+                  <label for="dataChamado">Data do(s) chamado(s):</label>
                 </div>
 
                 <!-- Número do Chamado -->
                 <div class="form-floating mb-3">
                   <input type="number" class="form-control" id="numeroChamado" name="numeroChamado" required>
-                  <label for="numeroChamado">Número do chamado:</label>
-                </div>
-
-                <!-- Informações Adicionais -->
-                <div class="form-floating mb-3">
-                  <textarea class="form-control" id="informacoesAdicionais" name="informacoesAdicionais" style="height: 250px" required></textarea>
-                  <label for="informacoesAdicionais">Breve descrição do chamado:</label>
+                  <label for="numeroChamado">Número do chamado a que se refere o reembolso (informar todos os chamados, caso tenha mais de um no pedido):</label>
                 </div>
 
                 <!-- Upload de Arquivo -->
@@ -187,7 +211,7 @@
 
                 <!-- Ações -->
                 <div class="mb-3">
-                  <button type="submit" class="btn btn-outline-primary" id="salvarTudo">Salvar e Enviar</button>
+                  <button type="submit" class="btn btn-outline-primary" id="salvarTudo">Solicitar e salvar</button>
                   <button type="button" class="btn btn-outline-primary" id="enviarDiscord">Enviar para Discord</button>
                   <button type="button" class="btn btn-outline-danger" onclick="limparFormulario()">Apagar Tudo</button>
                 </div>

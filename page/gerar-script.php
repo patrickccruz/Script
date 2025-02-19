@@ -5,11 +5,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
     exit;
 }
 
-if (isset($_SESSION['user'])) {
-    $user = $_SESSION['user'];
-} else {
-    $user = ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
-}
+require_once '../includes/upload_functions.php';
+$is_page = true;
 
 // Conexão com o banco de dados
 $conn = new mysqli('localhost', 'root', '', 'sou_digital');
@@ -17,42 +14,86 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $dataChamado = $_POST['dataChamado'];
-    $numeroChamado = $_POST['numeroChamado'];
-    $cliente = $_POST['cliente'];
-    $nomeInformante = $_POST['nomeInformante'];
-    $quantidadePatrimonios = $_POST['quantidadePatrimonios'];
-    $kmInicial = $_POST['kmInicial'];
-    $kmFinal = $_POST['kmFinal'];
-    $horaChegada = $_POST['horaChegada'];
-    $horaSaida = $_POST['horaSaida'];
-    $enderecoPartida = $_POST['enderecoPartida'];
-    $enderecoChegada = $_POST['enderecoChegada'];
-    $informacoesAdicionais = $_POST['informacoesAdicionais'];
-    $arquivoPath = '';
+$error_message = '';
+$success_message = '';
 
-    if (isset($_FILES['arquivo']) && $_FILES['arquivo']['error'] == UPLOAD_ERR_OK) {
-        $uploadDir = '../uploads/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
-        $arquivoPath = $uploadDir . basename($_FILES['arquivo']['name']);
-        move_uploaded_file($_FILES['arquivo']['tmp_name'], $arquivoPath);
-    }
-
-    $stmt = $conn->prepare("INSERT INTO reports (user_id, data_chamado, numero_chamado, cliente, nome_informante, quantidade_patrimonios, km_inicial, km_final, hora_chegada, hora_saida, endereco_partida, endereco_chegada, informacoes_adicionais, arquivo_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("issssiiissssss", $user['id'], $dataChamado, $numeroChamado, $cliente, $nomeInformante, $quantidadePatrimonios, $kmInicial, $kmFinal, $horaChegada, $horaSaida, $enderecoPartida, $enderecoChegada, $informacoesAdicionais, $arquivoPath);
-
-    if ($stmt->execute()) {
-        echo "Dados salvos com sucesso!";
-    } else {
-        echo "Erro ao salvar os dados: " . $stmt->error;
-    }
-
-    $stmt->close();
-    $conn->close();
+if (isset($_SESSION['user'])) {
+    $user = $_SESSION['user'];
+} else {
+    $user = ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
 }
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    try {
+        $dataChamado = $_POST['dataChamado'];
+        $numeroChamado = $_POST['numeroChamado'];
+        $cliente = $_POST['cliente'];
+        $nomeInformante = $_POST['nomeInformante'];
+        $quantidadePatrimonios = $_POST['quantidadePatrimonios'];
+        $kmInicial = $_POST['kmInicial'];
+        $kmFinal = $_POST['kmFinal'];
+        $horaChegada = $_POST['horaChegada'];
+        $horaSaida = $_POST['horaSaida'];
+        $enderecoPartida = $_POST['enderecoPartida'];
+        $enderecoChegada = $_POST['enderecoChegada'];
+        $informacoesAdicionais = $_POST['informacoesAdicionais'];
+        $arquivoPath = '';
+
+        // Primeiro inserir o registro para obter o ID
+        $stmt = $conn->prepare("INSERT INTO reports (user_id, data_chamado, numero_chamado, cliente, nome_informante, quantidade_patrimonios, km_inicial, km_final, hora_chegada, hora_saida, endereco_partida, endereco_chegada, informacoes_adicionais) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("issssiiiissss", $user['id'], $dataChamado, $numeroChamado, $cliente, $nomeInformante, $quantidadePatrimonios, $kmInicial, $kmFinal, $horaChegada, $horaSaida, $enderecoPartida, $enderecoChegada, $informacoesAdicionais);
+
+        if (!$stmt->execute()) {
+            throw new Exception("Erro ao salvar os dados: " . $stmt->error);
+        }
+
+        $report_id = $conn->insert_id;
+
+        // Processar upload do arquivo
+        if (isset($_FILES['arquivo']) && $_FILES['arquivo']['error'] == UPLOAD_ERR_OK) {
+            $allowed_types = ['application/pdf'];
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime_type = $finfo->file($_FILES['arquivo']['tmp_name']);
+            
+            if (!is_allowed_file_type($mime_type, $allowed_types)) {
+                throw new Exception("Tipo de arquivo não permitido. Use apenas PDF.");
+            }
+
+            // Gerar nome único e mover arquivo
+            $new_filename = generate_unique_filename($_FILES['arquivo']['name'], 'rat_');
+            $upload_path = get_upload_path('reports', ['report_id' => $report_id]);
+            $full_path = $upload_path . '/' . $new_filename;
+
+            error_log("Tentando fazer upload para: " . $full_path);
+            
+            if (move_uploaded_file_safe($_FILES['arquivo']['tmp_name'], $full_path)) {
+                error_log("Upload realizado com sucesso para: " . $full_path);
+                // Armazenar apenas o caminho relativo no banco
+                $arquivoPath = 'uploads/reports/' . $report_id . '/' . $new_filename;
+                
+                // Atualizar o registro com o caminho do arquivo
+                $stmt = $conn->prepare("UPDATE reports SET arquivo_path = ? WHERE id = ?");
+                $stmt->bind_param("si", $arquivoPath, $report_id);
+                
+                if (!$stmt->execute()) {
+                    throw new Exception("Erro ao atualizar caminho do arquivo: " . $stmt->error);
+                }
+            } else {
+                throw new Exception("Erro ao fazer upload do arquivo");
+            }
+        }
+
+        $success_message = "Dados salvos com sucesso!";
+        header("Location: meus-scripts.php");
+        exit;
+
+    } catch (Exception $e) {
+        $error_message = $e->getMessage();
+    }
+}
+
+// Incluir o header depois de todo o processamento
+include_once '../includes/header.php';
 ?>
 
 <!DOCTYPE html>
@@ -157,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </nav>
                             </div>
 
-                            <form id="scriptForm" enctype="multipart/form-data" method="POST" action="salvar_dados.php">
+                            <form id="scriptForm" enctype="multipart/form-data" method="POST">
                                 <!-- Data do Chamado -->
                                 <div class="form-floating mb-3">
                                     <input type="date" class="form-control" id="dataChamado" name="dataChamado">
@@ -227,13 +268,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <!-- Upload de Arquivo -->
                                 <div class="form-floating mb-3">
                                     <input type="file" class="form-control" id="arquivo" name="arquivo" accept=".pdf">
-                                    <label for="arquivo">Anexar Rat (PDF):</label>
+                                    <label for="arquivo">Anexar RAT (PDF):</label>
                                 </div>
 
                                 <!-- Ações -->
                                 <div class="mb-3">
-                                    <button type="button" class="btn btn-outline-primary" id="salvarTudo">Salvar e Enviar</button>
-                                    <button type="button" class="btn btn-outline-danger" onclick="deleteRespGeral()">Apagar Tudo</button>
+                                    <button type="submit" class="btn btn-outline-primary">Salvar e Enviar</button>
+                                    <button type="button" class="btn btn-outline-danger" onclick="limparFormulario()">Apagar Tudo</button>
                                 </div>
                             </form>
                         </div>
@@ -257,7 +298,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <!-- Template Main JS File -->
     <script src="../assets/js/main.js"></script>
-    <script src="../script.js"></script>
 
     <!-- Modal de Sucesso -->
     <div class="modal fade" id="sucessoModal" tabindex="-1" aria-labelledby="sucessoModalLabel" aria-hidden="true">
@@ -296,6 +336,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 
     <script>
+    // Função para limpar o formulário
+    function limparFormulario() {
+        document.getElementById('scriptForm').reset();
+        mostrarSucesso('Formulário limpo com sucesso!');
+    }
+
     // Função para mostrar modal de sucesso
     function mostrarSucesso(mensagem) {
         document.getElementById('mensagemSucesso').textContent = mensagem;
@@ -309,6 +355,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         const modal = new bootstrap.Modal(document.getElementById('erroModal'));
         modal.show();
     }
+
+    <?php if ($success_message): ?>
+    mostrarSucesso("<?php echo htmlspecialchars($success_message); ?>");
+    <?php endif; ?>
+
+    <?php if ($error_message): ?>
+    mostrarErro("<?php echo htmlspecialchars($error_message); ?>");
+    <?php endif; ?>
     </script>
 </body>
 </html> 

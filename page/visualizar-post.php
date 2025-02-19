@@ -5,6 +5,9 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
     exit;
 }
 
+$is_page = true; // Indica que estamos em uma página dentro do diretório 'page'
+include_once '../includes/header.php';
+
 if (!isset($_GET['id'])) {
     header("Location: ../index.php");
     exit;

@@ -13,6 +13,9 @@ if (!isset($_SESSION['user']['is_admin']) || $_SESSION['user']['is_admin'] !== t
     exit;
 }
 
+$is_page = true; // Indica que estamos em uma página dentro do diretório 'page'
+include_once '../includes/header.php';
+
 // Gerar token CSRF
 $csrf_token = bin2hex(random_bytes(32));
 $_SESSION['csrf_token'] = $csrf_token;
@@ -232,8 +235,8 @@ if (isset($_SESSION['user']['id'])) {
                                     <div class="col-md-3">
                                         <select class="form-select" id="filterAdmin">
                                             <option value="">Todos os tipos</option>
-                                            <option value="1">Administradores</option>
-                                            <option value="0">Usuários comuns</option>
+                                            <option value="1">Acesso Administrador</option>
+                                            <option value="0">Acesso Usuário</option>
                                         </select>
                                     </div>
                                     <div class="col-md-2">
@@ -265,7 +268,7 @@ if (isset($_SESSION['user']['id'])) {
                                                 <td><?php echo htmlspecialchars($row['email']); ?></td>
                                                 <td>
                                                     <span class="status-badge <?php echo $row['is_admin'] ? 'status-admin' : 'status-user'; ?>">
-                                                        <?php echo $row['is_admin'] ? 'Admin' : 'Usuário'; ?>
+                                                        <?php echo $row['is_admin'] ? 'Acesso Administrador' : 'Acesso Usuário'; ?>
                                                     </span>
                                                 </td>
                                                 <td class="action-buttons">
@@ -301,7 +304,7 @@ if (isset($_SESSION['user']['id'])) {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="novoUsuarioModalLabel">
-                        <i class="bi bi-person-plus"></i> Criar Novo Usuário
+                        <i class="bi bi-person-plus"></i> Adicionar novo usuário
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>

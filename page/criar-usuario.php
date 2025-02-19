@@ -20,33 +20,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error_message = "Email inválido.";
     } else {
+        // Conexão com o banco de dados
         $conn = new mysqli('localhost', 'root', '', 'sou_digital');
+        
         if ($conn->connect_error) {
-            $error_message = "Erro de conexão com o banco de dados.";
+            $error_message = "Erro de conexão com o banco de dados: " . $conn->connect_error;
         } else {
             // Verificar se usuário ou email já existem
             $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-            $stmt->bind_param("ss", $username, $email);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            if ($result->num_rows > 0) {
-                $error_message = "Usuário ou email já cadastrado.";
+            if (!$stmt) {
+                $error_message = "Erro na preparação da consulta: " . $conn->error;
             } else {
-                // Criar novo usuário
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $conn->prepare("INSERT INTO users (name, username, email, password) VALUES (?, ?, ?, ?)");
-                $stmt->bind_param("ssss", $name, $username, $email, $hashed_password);
-                
-                if ($stmt->execute()) {
-                    $_SESSION['register_success'] = true;
-                    header("Location: autenticacao.php");
-                    exit;
+                $stmt->bind_param("ss", $username, $email);
+                if (!$stmt->execute()) {
+                    $error_message = "Erro na execução da consulta: " . $stmt->error;
                 } else {
-                    $error_message = "Erro ao criar conta.";
+                    $result = $stmt->get_result();
+                    
+                    if ($result->num_rows > 0) {
+                        $error_message = "Usuário ou email já cadastrado.";
+                    } else {
+                        // Criar novo usuário
+                        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                        $insert_stmt = $conn->prepare("INSERT INTO users (name, username, email, password) VALUES (?, ?, ?, ?)");
+                        
+                        if (!$insert_stmt) {
+                            $error_message = "Erro na preparação da inserção: " . $conn->error;
+                        } else {
+                            $insert_stmt->bind_param("ssss", $name, $username, $email, $hashed_password);
+                            
+                            if ($insert_stmt->execute()) {
+                                $_SESSION['register_success'] = true;
+                                header("Location: autenticacao.php");
+                                exit;
+                            } else {
+                                $error_message = "Erro ao criar conta: " . $insert_stmt->error;
+                            }
+                            $insert_stmt->close();
+                        }
+                    }
                 }
+                $stmt->close();
             }
-            $stmt->close();
             $conn->close();
         }
     }
@@ -108,15 +123,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   </div>
 
                   <?php if ($error_message): ?>
-                    <div class="alert alert-danger" role="alert">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
                       <?php echo htmlspecialchars($error_message); ?>
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                   <?php endif; ?>
 
                   <form class="row g-3 needs-validation" method="POST" novalidate>
                     <div class="col-12">
                       <label for="name" class="form-label">Nome Completo</label>
-                      <input type="text" name="name" class="form-control" id="name" required>
+                      <input type="text" name="name" class="form-control" id="name" value="<?php echo isset($_POST['name']) ? htmlspecialchars($_POST['name']) : ''; ?>" required>
                       <div class="invalid-feedback">Por favor, digite seu nome!</div>
                     </div>
 
@@ -124,14 +140,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                       <label for="username" class="form-label">Nome de Usuário</label>
                       <div class="input-group has-validation">
                         <span class="input-group-text" id="inputGroupPrepend">@</span>
-                        <input type="text" name="username" class="form-control" id="username" required>
+                        <input type="text" name="username" class="form-control" id="username" value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>" required>
                         <div class="invalid-feedback">Por favor, escolha um nome de usuário!</div>
                       </div>
                     </div>
 
                     <div class="col-12">
                       <label for="email" class="form-label">Email</label>
-                      <input type="email" name="email" class="form-control" id="email" required>
+                      <input type="email" name="email" class="form-control" id="email" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
                       <div class="invalid-feedback">Por favor, digite um email válido!</div>
                     </div>
 
@@ -184,14 +200,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <script src="../assets/js/main.js"></script>
 
   <script>
-    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    // Validação do formulário
     (function () {
       'use strict'
 
-      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      // Buscar todos os formulários que precisam de validação
       var forms = document.querySelectorAll('.needs-validation')
 
-      // Loop over them and prevent submission
+      // Loop sobre eles e prevenir submissão se inválidos
       Array.prototype.slice.call(forms)
         .forEach(function (form) {
           form.addEventListener('submit', function (event) {
@@ -204,6 +220,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           }, false)
         })
     })()
+
+    // Validação adicional de email
+    document.getElementById('email').addEventListener('input', function() {
+      var email = this.value;
+      var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (!emailRegex.test(email)) {
+        this.setCustomValidity('Por favor, insira um email válido');
+      } else {
+        this.setCustomValidity('');
+      }
+    });
   </script>
 </body>
 </html>

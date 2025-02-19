@@ -5,6 +5,9 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
     exit;
 }
 
+$is_page = true; // Indica que estamos em uma página dentro do diretório 'page'
+include_once '../includes/header.php';
+
 if (isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
 } else {
@@ -31,7 +34,7 @@ $result = $stmt->get_result();
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <title>Meus Scripts - Sou + Digital</title>
+    <title>Meus lançamentos - Sou + Digital</title>
     <meta content="" name="description">
     <meta content="" name="keywords">
 
@@ -70,6 +73,10 @@ $result = $stmt->get_result();
             position: absolute;
             top: 10px;
             right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: flex-end;
         }
         .search-box {
             position: relative;
@@ -154,11 +161,11 @@ $result = $stmt->get_result();
                     <div class="card">
                         <div class="card-body">
                             <div class="pagetitle">
-                                <h1>Meus Scripts</h1>
+                                <h1>Meus lançamentos</h1>
                                 <nav>
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="../index.php">Inicial</a></li>
-                                        <li class="breadcrumb-item active">Meus Scripts</li>
+                                        <li class="breadcrumb-item active">Meus lançamentos</li>
                                     </ol>
                                 </nav>
                             </div>
@@ -213,10 +220,20 @@ $result = $stmt->get_result();
                                                         Chamado #<?php echo htmlspecialchars($row['numero_chamado']); ?>
                                                     </h5>
                                                     <div class="status-badge">
-                                                        <?php if ($row['arquivo_path']): ?>
-                                                            <span class="badge bg-success">RAT Anexado</span>
+                                                        <?php if (isset($_SESSION['user']['is_admin']) && $_SESSION['user']['is_admin']): ?>
+                                                            <span class="badge bg-danger">Administrador</span>
                                                         <?php else: ?>
-                                                            <span class="badge bg-warning">Sem RAT</span>
+                                                            <span class="badge bg-info">Usuário</span>
+                                                        <?php endif; ?>
+                                                        
+                                                        <?php if ($row['arquivo_path']): ?>
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-file-earmark-check"></i> RAT Anexado
+                                                            </span>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-warning">
+                                                                <i class="bi bi-file-earmark-x"></i> Sem RAT
+                                                            </span>
                                                         <?php endif; ?>
                                                     </div>
                                                     <p class="card-text">
@@ -228,7 +245,7 @@ $result = $stmt->get_result();
                                                 <div class="card-footer">
                                                     <div class="d-flex justify-content-between align-items-center">
                                                         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detalhesModal<?php echo $row['id']; ?>">
-                                                            <i class="bi bi-eye"></i> Ver Detalhes
+                                                            <i class="bi bi-eye"></i> Ver script
                                                         </button>
                                                         <?php if ($row['arquivo_path']): ?>
                                                             <a href="<?php echo $row['arquivo_path']; ?>" class="btn btn-info btn-sm" target="_blank">
@@ -247,7 +264,7 @@ $result = $stmt->get_result();
                                                     <div class="modal-header bg-primary text-white">
                                                         <h5 class="modal-title">
                                                             <i class="bi bi-file-text me-2"></i>
-                                                            Detalhes do Script #<?php echo htmlspecialchars($row['numero_chamado']); ?>
+                                                            Lançamento de script#<?php echo htmlspecialchars($row['numero_chamado']); ?>
                                                         </h5>
                                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
@@ -261,11 +278,11 @@ $result = $stmt->get_result();
                                                                 <div class="ms-4">
                                                                     <div class="row mb-2">
                                                                         <div class="col-md-6">
-                                                                            <p class="mb-1"><i class="bi bi-calendar me-2"></i><strong>Data:</strong></p>
+                                                                            <p class="mb-1"><i class="bi bi-calendar me-2"></i><strong>Data do chamado:</strong></p>
                                                                             <p class="text-muted ms-4"><?php echo date('d/m/Y', strtotime($row['data_chamado'])); ?></p>
                                                                         </div>
                                                                         <div class="col-md-6">
-                                                                            <p class="mb-1"><i class="bi bi-hash me-2"></i><strong>Número:</strong></p>
+                                                                            <p class="mb-1"><i class="bi bi-hash me-2"></i><strong>Número do chamado:</strong></p>
                                                                             <p class="text-muted ms-4"><?php echo htmlspecialchars($row['numero_chamado']); ?></p>
                                                                         </div>
                                                                     </div>
@@ -280,11 +297,11 @@ $result = $stmt->get_result();
                                                                 <div class="ms-4">
                                                                     <div class="row mb-2">
                                                                         <div class="col-md-6">
-                                                                            <p class="mb-1"><i class="bi bi-building me-2"></i><strong>Cliente:</strong></p>
+                                                                            <p class="mb-1"><i class="bi bi-building me-2"></i><strong>Cliente atendido:</strong></p>
                                                                             <p class="text-muted ms-4"><?php echo htmlspecialchars($row['cliente']); ?></p>
                                                                         </div>
                                                                         <div class="col-md-6">
-                                                                            <p class="mb-1"><i class="bi bi-person-badge me-2"></i><strong>Informante:</strong></p>
+                                                                            <p class="mb-1"><i class="bi bi-person-badge me-2"></i><strong>Quem atribuiu o chamado:</strong></p>
                                                                             <p class="text-muted ms-4"><?php echo htmlspecialchars($row['nome_informante']); ?></p>
                                                                         </div>
                                                                     </div>
@@ -309,11 +326,11 @@ $result = $stmt->get_result();
                                                                     </div>
                                                                     <div class="row mb-2">
                                                                         <div class="col-md-6">
-                                                                            <p class="mb-1"><i class="bi bi-clock me-2"></i><strong>Hora Chegada:</strong></p>
+                                                                            <p class="mb-1"><i class="bi bi-clock me-2"></i><strong>Horário de chegada no chamado:</strong></p>
                                                                             <p class="text-muted ms-4"><?php echo htmlspecialchars($row['hora_chegada']); ?></p>
                                                                         </div>
                                                                         <div class="col-md-6">
-                                                                            <p class="mb-1"><i class="bi bi-clock-history me-2"></i><strong>Hora Saída:</strong></p>
+                                                                            <p class="mb-1"><i class="bi bi-clock-history me-2"></i><strong>Horário de saída do chamado:</strong></p>
                                                                             <p class="text-muted ms-4"><?php echo htmlspecialchars($row['hora_saida']); ?></p>
                                                                         </div>
                                                                     </div>
@@ -335,7 +352,7 @@ $result = $stmt->get_result();
                                                             <!-- Informações do Serviço -->
                                                             <div class="list-group-item">
                                                                 <h6 class="mb-3 text-primary">
-                                                                    <i class="bi bi-tools me-2"></i>Informações do Serviço
+                                                                    <i class="bi bi-tools me-2"></i>Informações do Atendimento Realizado
                                                                 </h6>
                                                                 <div class="ms-4">
                                                                     <div class="row mb-2">

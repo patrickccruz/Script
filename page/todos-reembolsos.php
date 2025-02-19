@@ -1,18 +1,12 @@
 <?php
 session_start();
-require_once '../db.php';
-
-// Verificação de autenticação
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true || !isset($_SESSION['user']['is_admin']) || $_SESSION['user']['is_admin'] !== true) {
     header("Location: autenticacao.php");
     exit;
 }
 
-// Verificação de permissão de administrador
-if (!isset($_SESSION['user']['is_admin']) || $_SESSION['user']['is_admin'] !== true) {
-    header('Location: ../index.php');
-    exit;
-}
+$is_page = true; // Indica que estamos em uma página dentro do diretório 'page'
+include_once '../includes/header.php';
 
 $conn = new mysqli('localhost', 'root', '', 'sou_digital');
 if ($conn->connect_error) {
@@ -40,20 +34,20 @@ if (isset($_SESSION['user']['id'])) {
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Todos os Reembolsos - Sou + Digital</title>
-    <meta content="" name="description">
-    <meta content="" name="keywords">
-    <link href="../assets/img/Icon geral.png" rel="icon">
-    <link href="../assets/img/Icon geral.png" rel="apple-touch-icon">
-    <link href="https://fonts.gstatic.com" rel="preconnect">
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Todos os Reembolsos - Sou + Digital</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+  <link href="../assets/img/Icon geral.png" rel="icon">
+  <link href="../assets/img/Icon geral.png" rel="apple-touch-icon">
+  <link href="https://fonts.gstatic.com" rel="preconnect">
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i" rel="stylesheet">
-    <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-    <link href="../assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
-    <link href="../assets/vendor/simple-datatables/style.css" rel="stylesheet">
-    <link href="../assets/css/style.css" rel="stylesheet">
+  <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="../assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="../assets/vendor/simple-datatables/style.css" rel="stylesheet">
+  <link href="../assets/css/style.css" rel="stylesheet">
 
     <style>
         .reembolso-card {
@@ -132,66 +126,66 @@ if (isset($_SESSION['user']['id'])) {
 
 <body>
     <!-- Header -->
-    <header id="header" class="header fixed-top d-flex align-items-center">
-        <div class="d-flex align-items-center justify-content-between">
-            <a href="../index.php" class="logo d-flex align-items-center">
-                <img src="../assets/img/Ico_geral.png" alt="Logo">
-                <span class="d-none d-lg-block">Sou + Digital</span>
-            </a>
-            <i class="bi bi-list toggle-sidebar-btn"></i>
-        </div>
+  <header id="header" class="header fixed-top d-flex align-items-center">
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="../index.php" class="logo d-flex align-items-center">
+        <img src="../assets/img/Ico_geral.png" alt="Logo">
+        <span class="d-none d-lg-block">Sou + Digital</span>
+      </a>
+      <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div>
 
-        <nav class="header-nav ms-auto">
-            <ul class="d-flex align-items-center">
-                <li class="nav-item dropdown pe-3">
-                    <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+        <li class="nav-item dropdown pe-3">
+          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
                         <span class="d-none d-md-block dropdown-toggle ps-2">
                             <?php echo isset($user['name']) ? htmlspecialchars($user['name']) : 'Usuário'; ?>
                         </span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-                        <li class="dropdown-header">
-                            <h6><?php echo isset($user['name']) ? htmlspecialchars($user['name']) : 'Usuário'; ?></h6>
-                            <span><?php echo isset($user['username']) ? htmlspecialchars($user['username']) : ''; ?></span>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="meu-perfil.php">
-                                <i class="bi bi-person"></i>
-                                <span>Meu Perfil</span>
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="sair.php">
-                                <i class="bi bi-box-arrow-right"></i>
-                                <span>Sair</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
-    </header>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+            <li class="dropdown-header">
+              <h6><?php echo isset($user['name']) ? htmlspecialchars($user['name']) : 'Usuário'; ?></h6>
+              <span><?php echo isset($user['username']) ? htmlspecialchars($user['username']) : ''; ?></span>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="meu-perfil.php">
+                <i class="bi bi-person"></i>
+                <span>Meu Perfil</span>
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="sair.php">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sair</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </header>
 
-    <?php include_once '../includes/sidebar.php'; ?>
+  <?php include_once '../includes/sidebar.php'; ?>
 
-    <main id="main" class="main">
-        <section class="section">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="pagetitle">
-                                <h1>Todos os Reembolsos</h1>
-                                <nav>
-                                    <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="../index.php">Inicial</a></li>
-                                        <li class="breadcrumb-item">Administração</li>
-                                        <li class="breadcrumb-item active">Todos os Reembolsos</li>
-                                    </ol>
-                                </nav>
-                            </div>
+  <main id="main" class="main">
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="pagetitle">
+                <h1>Todos os Reembolsos</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="../index.php">Inicial</a></li>
+                    <li class="breadcrumb-item">Administração</li>
+                    <li class="breadcrumb-item active">Todos os Reembolsos</li>
+                  </ol>
+                </nav>
+              </div>
 
                             <!-- Filtros e Pesquisa -->
                             <div class="filter-section">
@@ -234,8 +228,8 @@ if (isset($_SESSION['user']['id'])) {
 
                             <!-- Cards dos Reembolsos -->
                             <div class="row" id="reembolsosContainer">
-                                <?php if ($result && $result->num_rows > 0): ?>
-                                    <?php while ($row = $result->fetch_assoc()): ?>
+                    <?php if ($result && $result->num_rows > 0): ?>
+                      <?php while ($row = $result->fetch_assoc()): ?>
                                         <div class="col-md-6 col-lg-4 mb-4 reembolso-card-container">
                                             <div class="card reembolso-card h-100">
                                                 <div class="card-body">
@@ -289,13 +283,13 @@ if (isset($_SESSION['user']['id'])) {
                                                                     <i class="bi bi-person me-2"></i>Informações do Solicitante
                                                                 </h6>
                                                                 <div class="ms-4 user-info">
-                                                                    <?php if ($row['profile_image']): ?>
-                                                                        <img src="<?php echo htmlspecialchars('../uploads/' . $row['profile_image']); ?>" 
-                                                                             alt="Profile" 
+                            <?php if ($row['profile_image']): ?>
+                              <img src="<?php echo htmlspecialchars('../uploads/' . $row['profile_image']); ?>" 
+                                   alt="Profile" 
                                                                              class="user-avatar">
                                                                     <?php else: ?>
                                                                         <i class="bi bi-person-circle me-2" style="font-size: 2rem;"></i>
-                                                                    <?php endif; ?>
+                            <?php endif; ?>
                                                                     <div>
                                                                         <h6 class="mb-0"><?php echo htmlspecialchars($row['user_name']); ?></h6>
                                                                         <small class="text-muted">Solicitante</small>
@@ -345,50 +339,50 @@ if (isset($_SESSION['user']['id'])) {
                                                             </div>
 
                                                             <!-- Arquivos -->
-                                                            <?php if ($row['arquivo_path']): ?>
+                            <?php if ($row['arquivo_path']): ?>
                                                             <div class="list-group-item">
                                                                 <h6 class="mb-3 text-primary">
                                                                     <i class="bi bi-files me-2"></i>Arquivos Anexados
                                                                 </h6>
                                                                 <div class="ms-4">
                                                                     <div class="file-preview">
-                                                                        <?php 
-                                                                        $arquivos = explode(',', $row['arquivo_path']);
-                                                                        foreach($arquivos as $arquivo):
-                                                                            $nomeArquivo = basename($arquivo);
-                                                                            $extensao = pathinfo($nomeArquivo, PATHINFO_EXTENSION);
-                                                                            $icone = '';
-                                                                            
-                                                                            switch(strtolower($extensao)) {
-                                                                                case 'pdf':
-                                                                                    $icone = 'bi-file-pdf';
-                                                                                    break;
-                                                                                case 'jpg':
-                                                                                case 'jpeg':
-                                                                                case 'png':
-                                                                                case 'gif':
-                                                                                    $icone = 'bi-file-image';
-                                                                                    break;
-                                                                                case 'mp4':
-                                                                                case 'avi':
-                                                                                case 'mov':
-                                                                                    $icone = 'bi-file-play';
-                                                                                    break;
-                                                                                default:
-                                                                                    $icone = 'bi-file-earmark';
-                                                                            }
-                                                                        ?>
-                                                                            <a href="<?php echo htmlspecialchars($arquivo); ?>" 
-                                                                               target="_blank" 
+                              <?php 
+                                $arquivos = explode(',', $row['arquivo_path']);
+                                foreach($arquivos as $arquivo):
+                                  $nomeArquivo = basename($arquivo);
+                                  $extensao = pathinfo($nomeArquivo, PATHINFO_EXTENSION);
+                                  $icone = '';
+                                  
+                                  switch(strtolower($extensao)) {
+                                    case 'pdf':
+                                      $icone = 'bi-file-pdf';
+                                      break;
+                                    case 'jpg':
+                                    case 'jpeg':
+                                    case 'png':
+                                    case 'gif':
+                                      $icone = 'bi-file-image';
+                                      break;
+                                    case 'mp4':
+                                    case 'avi':
+                                    case 'mov':
+                                      $icone = 'bi-file-play';
+                                      break;
+                                    default:
+                                      $icone = 'bi-file-earmark';
+                                  }
+                              ?>
+                                <a href="<?php echo htmlspecialchars($arquivo); ?>" 
+                                   target="_blank" 
                                                                                class="file-item text-decoration-none">
-                                                                                <i class="bi <?php echo $icone; ?>"></i>
-                                                                                <?php echo htmlspecialchars($nomeArquivo); ?>
-                                                                            </a>
-                                                                        <?php endforeach; ?>
+                                  <i class="bi <?php echo $icone; ?>"></i>
+                                  <?php echo htmlspecialchars($nomeArquivo); ?>
+                                </a>
+                              <?php endforeach; ?>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <?php endif; ?>
+                            <?php endif; ?>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
@@ -399,8 +393,8 @@ if (isset($_SESSION['user']['id'])) {
                                                 </div>
                                             </div>
                                         </div>
-                                    <?php endwhile; ?>
-                                <?php else: ?>
+                      <?php endwhile; ?>
+                    <?php else: ?>
                                     <div class="col-12">
                                         <div class="empty-state">
                                             <i class="bi bi-receipt-cutoff"></i>
@@ -408,29 +402,29 @@ if (isset($_SESSION['user']['id'])) {
                                             <p>Não há reembolsos registrados no sistema.</p>
                                         </div>
                                     </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    <?php endif; ?>
+              </div>
             </div>
-        </section>
-    </main>
-
-    <footer id="footer" class="footer">
-        <div class="copyright">
-            &copy; Copyright <strong><span>Sou + Digital</span></strong>. Todos os direitos reservados
+          </div>
         </div>
-        <div class="credits">
-            Desenvolvido por <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C Cruz</a>
-        </div>
-    </footer>
+      </div>
+    </section>
+  </main>
 
-    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <footer id="footer" class="footer">
+    <div class="copyright">
+      &copy; Copyright <strong><span>Sou + Digital</span></strong>. Todos os direitos reservados
+    </div>
+    <div class="credits">
+      Desenvolvido por <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C Cruz</a>
+    </div>
+  </footer>
 
-    <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="../assets/vendor/apexcharts/apexcharts.min.js"></script>
-    <script src="../assets/js/main.js"></script>
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="../assets/js/main.js"></script>
 
     <!-- Filtro e Pesquisa Script -->
     <script>
