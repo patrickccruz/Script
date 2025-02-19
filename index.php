@@ -23,8 +23,20 @@ $sql = "SELECT p.*, u.name as author_name,
         (SELECT COUNT(*) FROM blog_comentarios WHERE post_id = p.id) as total_comments
         FROM blog_posts p 
         LEFT JOIN users u ON p.user_id = u.id 
+        WHERE p.status = 'aprovado'
         ORDER BY p.data_criacao DESC";
+
 $result = $conn->query($sql);
+
+// Armazenar os posts em um array
+$posts = [];
+if ($result && $result->num_rows > 0) {
+    while ($post = $result->fetch_assoc()) {
+        $posts[] = $post;
+    }
+}
+
+include_once 'includes/header.php';
 ?>
 
 <!DOCTYPE html>
@@ -151,50 +163,6 @@ $result = $conn->query($sql);
 </head>
 
 <body>
-    <!-- ======= Header ======= -->
-    <header id="header" class="header fixed-top d-flex align-items-center">
-        <div class="d-flex align-items-center justify-content-between">
-            <a href="index.php" class="logo d-flex align-items-center">
-                <img src="assets/img/Ico_geral.png" alt="Logo">
-                <span class="d-none d-lg-block">Sou + Digital</span>
-            </a>
-            <i class="bi bi-list toggle-sidebar-btn"></i>
-        </div>
-
-        <nav class="header-nav ms-auto">
-            <ul class="d-flex align-items-center">
-                <li class="nav-item dropdown pe-3">
-                    <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                        <span class="d-none d-md-block dropdown-toggle ps-2">
-                            <?php echo htmlspecialchars($user['name']); ?>
-                        </span>
-                    </a>
-
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-                        <li class="dropdown-header">
-                            <h6>Nome: <?php echo htmlspecialchars($user['name']); ?></h6>
-                            <span>Usuário: <?php echo htmlspecialchars($user['username']); ?></span>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="page/meu-perfil.php">
-                                <i class="bi bi-person"></i>
-                                <span>Meu Perfil</span>
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="page/sair.php">
-                                <i class="bi bi-box-arrow-right"></i>
-                                <span>Deslogar</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
-    </header>
-
     <?php include_once 'includes/sidebar.php'; ?>
 
     <main id="main" class="main">
@@ -203,86 +171,117 @@ $result = $conn->query($sql);
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h5 class="card-title m-0">Blog Posts</h5>
-                                <?php if (isset($_SESSION['user']['is_admin']) && $_SESSION['user']['is_admin'] === true): ?>
-                                <a href="page/criar-post.php" class="btn btn-primary btn-novo-post">
-                                    <i class="bi bi-plus-lg"></i> Novo Post
-                                </a>
-                                <?php endif; ?>
+                            <!-- Cabeçalho da Página -->
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                                <div>
+                                    <h1 class="card-title fs-2 mb-1">
+                                        <i class="bi bi-newspaper text-primary me-2"></i>
+                                        Blog Sou + Digital
+                                    </h1>
+                                    <p class="text-muted mb-0">Compartilhe conhecimento, experiências e novidades</p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="page/criar-post.php" class="btn btn-primary btn-novo-post">
+                                        <i class="bi bi-plus-lg me-1"></i> Novo Post
+                                    </a>
+                                    <?php if (isset($_SESSION['user']['is_admin']) && $_SESSION['user']['is_admin'] === true): ?>
+                                    <a href="page/gerenciar-posts.php" class="btn btn-outline-primary btn-novo-post">
+                                        <i class="bi bi-list-check me-1"></i> Gerenciar Posts
+                                    </a>
+                                    <?php endif; ?>
+                                </div>
                             </div>
 
                             <?php if (isset($_SESSION['success'])): ?>
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <?php 
-                                echo $_SESSION['success'];
-                                unset($_SESSION['success']);
-                                ?>
+                            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <div>
+                                    <?php 
+                                    echo $_SESSION['success'];
+                                    unset($_SESSION['success']);
+                                    ?>
+                                </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                             <?php endif; ?>
 
                             <?php if (isset($_SESSION['error'])): ?>
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <?php 
-                                echo $_SESSION['error'];
-                                unset($_SESSION['error']);
-                                ?>
+                            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <div>
+                                    <?php 
+                                    echo $_SESSION['error'];
+                                    unset($_SESSION['error']);
+                                    ?>
+                                </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                             <?php endif; ?>
 
-                            <div class="row">
-                                <?php if ($result && $result->num_rows > 0): ?>
-                                    <?php while($post = $result->fetch_assoc()): ?>
+                            <!-- Grid de Posts -->
+                            <div class="row g-4">
+                                <?php if (!empty($posts)): ?>
+                                    <?php foreach ($posts as $post): ?>
                                         <div class="col-md-6 col-lg-4">
-                                            <div class="card blog-post">
+                                            <div class="card blog-post h-100">
                                                 <?php if ($post['imagem_capa']): ?>
-                                                <a href="page/visualizar-post.php?id=<?php echo $post['id']; ?>" class="post-image-container">
-                                                    <img src="<?php echo htmlspecialchars($post['imagem_capa']); ?>" class="post-image" alt="<?php echo htmlspecialchars($post['titulo']); ?>">
-                                                    <div class="post-overlay"></div>
+                                                <a href="page/visualizar-post.php?id=<?php echo $post['id']; ?>" 
+                                                   class="post-image-container">
+                                                    <img src="<?php echo htmlspecialchars($post['imagem_capa']); ?>" 
+                                                         class="post-image" 
+                                                         alt="<?php echo htmlspecialchars($post['titulo']); ?>">
+                                                    <div class="post-overlay d-flex align-items-center justify-content-center">
+                                                        <span class="btn btn-light btn-sm">
+                                                            <i class="bi bi-eye me-1"></i> Ver Post
+                                                        </span>
+                                                    </div>
                                                 </a>
                                                 <?php endif; ?>
-                                                <div class="card-body">
+                                                <div class="card-body d-flex flex-column">
                                                     <h5 class="card-title">
-                                                        <a href="page/visualizar-post.php?id=<?php echo $post['id']; ?>">
+                                                        <a href="page/visualizar-post.php?id=<?php echo $post['id']; ?>" class="text-decoration-none">
                                                             <?php echo htmlspecialchars($post['titulo']); ?>
                                                         </a>
                                                     </h5>
-                                                    <p class="card-text">
+                                                    <p class="card-text flex-grow-1">
                                                         <?php 
                                                         $preview = strip_tags($post['conteudo']);
                                                         echo strlen($preview) > 150 ? substr($preview, 0, 150) . "..." : $preview;
                                                         ?>
                                                     </p>
-                                                    <div class="d-flex justify-content-between align-items-center post-meta">
-                                                        <div>
-                                                            Por <?php echo htmlspecialchars($post['author_name']); ?><br>
-                                                            <small><?php echo date('d/m/Y H:i', strtotime($post['data_criacao'])); ?></small>
-                                                        </div>
-                                                        <div class="post-stats">
-                                                            <span>
-                                                                <i class="bi bi-chat-dots"></i><?php echo $post['total_comments']; ?>
-                                                            </span>
-                                                            <span>
-                                                                <i class="bi bi-heart"></i><?php echo $post['total_reactions']; ?>
-                                                            </span>
+                                                    <div class="post-meta mt-3 pt-3 border-top">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div class="author">
+                                                                <i class="bi bi-person-circle me-1"></i>
+                                                                <?php echo htmlspecialchars($post['author_name']); ?>
+                                                                <div class="text-muted small">
+                                                                    <i class="bi bi-calendar3 me-1"></i>
+                                                                    <?php echo date('d/m/Y', strtotime($post['data_criacao'])); ?>
+                                                                </div>
+                                                            </div>
+                                                            <div class="post-stats d-flex gap-3">
+                                                                <span class="text-primary" title="Comentários">
+                                                                    <i class="bi bi-chat-dots"></i> <?php echo $post['total_comments']; ?>
+                                                                </span>
+                                                                <span class="text-danger" title="Reações">
+                                                                    <i class="bi bi-heart"></i> <?php echo $post['total_reactions']; ?>
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    <?php endwhile; ?>
+                                    <?php endforeach; ?>
                                 <?php else: ?>
                                     <div class="col-12">
                                         <div class="empty-state">
                                             <i class="bi bi-journal-text"></i>
-                                            <p>Nenhum post encontrado.</p>
-                                            <?php if (isset($_SESSION['user']['is_admin']) && $_SESSION['user']['is_admin'] === true): ?>
-                                            <a href="page/criar-post.php" class="btn btn-primary btn-novo-post mt-3">
-                                                <i class="bi bi-plus-lg"></i> Criar Primeiro Post
+                                            <h4 class="mt-3 mb-2">Nenhum post publicado ainda</h4>
+                                            <p class="text-muted mb-4">Seja o primeiro a compartilhar algo interessante!</p>
+                                            <a href="page/criar-post.php" class="btn btn-primary btn-novo-post">
+                                                <i class="bi bi-plus-lg me-1"></i> Criar Primeiro Post
                                             </a>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 <?php endif; ?>
