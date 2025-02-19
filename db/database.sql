@@ -51,6 +51,9 @@ CREATE TABLE IF NOT EXISTS blog_posts (
     titulo VARCHAR(255) NOT NULL,
     conteudo TEXT NOT NULL,
     imagem_capa VARCHAR(255) NOT NULL,
+    status ENUM('pendente', 'aprovado', 'rejeitado') DEFAULT 'pendente',
+    comentario_admin TEXT,
+    data_aprovacao DATETIME,
     data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
     data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -86,6 +89,19 @@ CREATE TABLE IF NOT EXISTS blog_reacoes (
     FOREIGN KEY (post_id) REFERENCES blog_posts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE KEY unique_reacao (post_id, user_id)
+);
+
+-- Tabela para notificações
+CREATE TABLE IF NOT EXISTS notificacoes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    tipo ENUM('aprovacao', 'rejeicao', 'comentario', 'sistema') NOT NULL,
+    titulo VARCHAR(255) NOT NULL,
+    mensagem TEXT NOT NULL,
+    link VARCHAR(255),
+    lida BOOLEAN DEFAULT FALSE,
+    data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 DELIMITER //
