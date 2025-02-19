@@ -15,7 +15,14 @@ $basePath = $isSubfolder ? '../' : '';
     <li class="nav-item">
       <a class="nav-link" href="<?php echo $basePath; ?>index.php">
         <i class="bi bi-house"></i>
-        <span>Página Inicial</span>
+        <span>Sou Mais Acontece</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link" href="<?php echo $basePath; ?>page/meus-posts.php">
+        <i class="bi bi-journal-text"></i>
+        <span>Meus Posts</span>
       </a>
     </li>
 
@@ -23,17 +30,17 @@ $basePath = $isSubfolder ? '../' : '';
     <li class="nav-heading">Ferramentas</li>
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#scripts-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-journal-text"></i><span>Scripts</span><i class="bi bi-chevron-down ms-auto"></i>
+        <i class="bi bi-journal-text"></i><span>Lançamentos</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
       <ul id="scripts-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
         <li>
           <a href="<?php echo $basePath; ?>page/gerar-script.php">
-            <i class="bi bi-circle"></i><span>Gerar Script</span>
+            <i class="bi bi-circle"></i><span>Gerar lançamento</span>
           </a>
         </li>
         <li>
           <a href="<?php echo $basePath; ?>page/meus-scripts.php">
-            <i class="bi bi-circle"></i><span>Meus Scripts</span>
+            <i class="bi bi-circle"></i><span>Meus lançamentos</span>
           </a>
         </li>
       </ul>
