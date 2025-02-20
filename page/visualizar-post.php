@@ -317,7 +317,7 @@ $links = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                             </div>
 
                             <?php if ($post['imagem_capa']): ?>
-                            <img src="../<?php echo htmlspecialchars($post['imagem_capa']); ?>" alt="<?php echo htmlspecialchars($post['titulo']); ?>" class="post-image">
+                            <img src="../uploads/blog/<?php echo $post['id']; ?>/<?php echo basename(htmlspecialchars($post['imagem_capa'])); ?>" alt="<?php echo htmlspecialchars($post['titulo']); ?>" class="post-image">
                             <?php endif; ?>
 
                             <div class="post-content">

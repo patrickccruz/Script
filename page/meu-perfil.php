@@ -33,7 +33,7 @@ try {
             throw new Exception("ID de usuário inválido");
         }
 
-        $stmt = $conn->prepare("SELECT name, username, email, profile_image FROM users WHERE id = ?");
+        $stmt = $conn->prepare("SELECT id, name, username, email, profile_image FROM users WHERE id = ?");
         if (!$stmt) {
             throw new Exception("Erro na preparação da consulta: " . $conn->error);
         }
@@ -226,7 +226,7 @@ function h($str) {
 
           <div class="card">
             <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-              <img src="<?php echo h($user['profile_image'] ? '../uploads/' . $user['profile_image'] : '../assets/img/sem_foto.png'); ?>" alt="Profile">
+              <img src="<?php echo h($user['profile_image'] ? '../uploads/users/' . $user['id'] . '/profile/' . basename($user['profile_image']) : '../assets/img/sem_foto.png'); ?>" alt="Profile">
               <h2><?php echo h($user['name']); ?></h2>
             </div>
           </div>
@@ -280,7 +280,7 @@ function h($str) {
                     <div class="row mb-3">
                       <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Imagem de perfil</label>
                       <div class="col-md-8 col-lg-9">
-                        <img id="profileImagePreview" src="<?php echo h($user['profile_image'] ? '../uploads/' . $user['profile_image'] : '../assets/img/sem_foto.png'); ?>" alt="Profile">
+                        <img id="profileImagePreview" src="<?php echo h($user['profile_image'] ? '../uploads/users/' . $user['id'] . '/profile/' . basename($user['profile_image']) : '../assets/img/sem_foto.png'); ?>" alt="Profile">
                         <div class="pt-2">
                           <input type="file" name="profile_image" class="form-control d-none" id="profileImageInput">
                           <button type="button" onclick="document.getElementById('profileImageInput').click();" class="btn btn-primary btn-sm" title="Upload new profile image"><i class="bi bi-upload"></i></button>

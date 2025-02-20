@@ -19,13 +19,6 @@ $basePath = $isSubfolder ? '../' : '';
       </a>
     </li>
 
-    <li class="nav-item">
-      <a class="nav-link" href="<?php echo $basePath; ?>page/meus-posts.php">
-        <i class="bi bi-journal-text"></i>
-        <span>Meus Posts</span>
-      </a>
-    </li>
-
     <!-- Categoria: Ferramentas -->
     <li class="nav-heading">Ferramentas</li>
     <li class="nav-item">

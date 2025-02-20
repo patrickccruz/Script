@@ -282,7 +282,7 @@ function formatarData($data) {
                                             <div class="col-md-4 mb-4">
                                                 <?php if ($post['imagem_capa']): ?>
                                                     <div class="position-relative">
-                                                        <img src="../<?php echo htmlspecialchars($post['imagem_capa']); ?>" 
+                                                        <img src="../uploads/blog/<?php echo $post['id']; ?>/<?php echo basename(htmlspecialchars($post['imagem_capa'])); ?>" 
                                                              class="img-fluid rounded shadow-sm" 
                                                              alt="Imagem do post">
                                                         <div class="position-absolute bottom-0 start-0 p-3 w-100 bg-dark bg-opacity-50 text-white">

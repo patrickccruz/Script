@@ -227,7 +227,7 @@ include_once 'includes/header.php';
                                                 <?php if ($post['imagem_capa']): ?>
                                                 <a href="page/visualizar-post.php?id=<?php echo $post['id']; ?>" 
                                                    class="post-image-container">
-                                                    <img src="<?php echo htmlspecialchars($post['imagem_capa']); ?>" 
+                                                    <img src="uploads/blog/<?php echo $post['id']; ?>/<?php echo basename(htmlspecialchars($post['imagem_capa'])); ?>" 
                                                          class="post-image" 
                                                          alt="<?php echo htmlspecialchars($post['titulo']); ?>">
                                                     <div class="post-overlay d-flex align-items-center justify-content-center">
