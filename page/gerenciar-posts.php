@@ -87,13 +87,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $tipo = 'aprovacao';
                     $notif_titulo = 'Post Aprovado';
                     $mensagem = "Seu post \"$titulo\" foi aprovado!";
+                    $link = null;
                 } else {
                     $tipo = 'rejeicao';
                     $notif_titulo = 'Post Rejeitado';
                     $mensagem = "Seu post \"$titulo\" foi rejeitado. Motivo: $comentario";
+                    $link = null;
                 }
                 
-                $link = "page/meus-posts.php";
                 $notif_stmt->bind_param("issss", $autor['user_id'], $tipo, $notif_titulo, $mensagem, $link);
                 $notif_stmt->execute();
             }

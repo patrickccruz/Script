@@ -248,7 +248,9 @@ $result = $stmt->get_result();
                                                             <i class="bi bi-eye"></i> Ver script
                                                         </button>
                                                         <?php if ($row['arquivo_path']): ?>
-                                                            <a href="<?php echo $row['arquivo_path']; ?>" class="btn btn-info btn-sm" target="_blank">
+                                                            <a href="view-pdf.php?file=<?php echo htmlspecialchars($row['arquivo_path']); ?>" 
+                                                               class="btn btn-info btn-sm" 
+                                                               target="_blank">
                                                                 <i class="bi bi-file-pdf"></i> Ver RAT
                                                             </a>
                                                         <?php endif; ?>
@@ -381,7 +383,9 @@ $result = $stmt->get_result();
                                                     </div>
                                                     <div class="modal-footer">
                                                         <?php if ($row['arquivo_path']): ?>
-                                                            <a href="<?php echo $row['arquivo_path']; ?>" class="btn btn-info" target="_blank">
+                                                            <a href="view-pdf.php?file=<?php echo htmlspecialchars($row['arquivo_path']); ?>" 
+                                                               class="btn btn-info" 
+                                                               target="_blank">
                                                                 <i class="bi bi-file-pdf"></i> Abrir RAT
                                                             </a>
                                                         <?php endif; ?>

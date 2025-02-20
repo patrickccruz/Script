@@ -188,9 +188,9 @@
                           <p class="card-text"><strong>Informações Adicionais:</strong> <?php echo htmlspecialchars($row['informacoes_adicionais']); ?></p>
                           
                           <?php if ($row['arquivo_path']): ?>
-                            <a href="../<?php echo htmlspecialchars($row['arquivo_path']); ?>" 
-                               target="_blank" 
-                               class="btn btn-outline-primary mb-2">
+                            <a href="view-pdf.php?file=<?php echo htmlspecialchars($row['arquivo_path']); ?>" 
+                               class="btn btn-outline-primary mb-2"
+                               target="_blank">
                               <i class="bi bi-file-pdf"></i>
                               Ver RAT
                             </a>
