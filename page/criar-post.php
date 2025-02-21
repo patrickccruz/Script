@@ -20,6 +20,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $links = isset($_POST['links']) ? $_POST['links'] : [];
     $links_descricao = isset($_POST['links_descricao']) ? $_POST['links_descricao'] : [];
 
+    // Verificar se os termos foram aceitos
+    if (!isset($_POST['aceitar_termos']) || $_POST['aceitar_termos'] != '1') {
+        $_SESSION['error'] = "Você precisa aceitar os termos de postagem para continuar.";
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    }
+
     if (empty($titulo) || empty($conteudo)) {
         $_SESSION['error'] = "Por favor, preencha todos os campos obrigatórios.";
         header("Location: " . $_SERVER['PHP_SELF']);
@@ -40,8 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         // Primeiro inserir o post para obter o ID
-        $stmt = $conn->prepare("INSERT INTO blog_posts (user_id, titulo, conteudo, status, data_criacao) VALUES (?, ?, ?, 'pendente', NOW())");
-        $stmt->bind_param("iss", $user['id'], $titulo, $conteudo);
+        $status = isset($user['is_admin']) && $user['is_admin'] === true ? 'aprovado' : 'pendente';
+        $data_aprovacao = $status === 'aprovado' ? date('Y-m-d H:i:s') : null;
+        
+        $stmt = $conn->prepare("INSERT INTO blog_posts (user_id, titulo, conteudo, status, data_aprovacao, data_criacao) VALUES (?, ?, ?, ?, ?, NOW())");
+        $stmt->bind_param("issss", $user['id'], $titulo, $conteudo, $status, $data_aprovacao);
         
         if ($stmt->execute()) {
             $post_id = $conn->insert_id;
@@ -67,6 +77,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $stmt->bind_param("iss", $post_id, $url, $links_descricao[$i]);
                             $stmt->execute();
                         }
+                    }
+                }
+
+                // Notificar todos os administradores apenas se não for um admin
+                if ($status === 'pendente') {
+                    $admin_query = $conn->prepare("SELECT id FROM users WHERE is_admin = 1");
+                    $admin_query->execute();
+                    $admin_result = $admin_query->get_result();
+                    
+                    while ($admin = $admin_result->fetch_assoc()) {
+                        $notif_stmt = $conn->prepare("INSERT INTO notificacoes (user_id, tipo, titulo, mensagem, link) VALUES (?, 'sistema', ?, ?, ?)");
+                        $notif_titulo = "Novo Post para Aprovação";
+                        $mensagem = "O usuário " . $user['name'] . " criou um novo post: \"" . $titulo . "\"";
+                        $link = "gerenciar-posts.php";
+                        $notif_stmt->bind_param("isss", $admin['id'], $notif_titulo, $mensagem, $link);
+                        $notif_stmt->execute();
                     }
                 }
 
@@ -188,7 +214,11 @@ include_once '../includes/header.php';
 
                             <div class="alert alert-info">
                                 <i class="bi bi-info-circle"></i>
+                                <?php if (!isset($user['is_admin']) || $user['is_admin'] !== true): ?>
                                 Seu post será revisado por um administrador antes de ser publicado.
+                                <?php else: ?>
+                                Seu post será publicado imediatamente por você ser um administrador.
+                                <?php endif; ?>
                             </div>
 
                             <form method="POST" enctype="multipart/form-data" action="<?php echo $_SERVER['PHP_SELF']; ?>">
@@ -228,6 +258,18 @@ include_once '../includes/header.php';
                                 <button type="button" class="btn btn-secondary mb-3" onclick="adicionarLink()">
                                     <i class="bi bi-plus-circle"></i> Adicionar Link
                                 </button>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="aceitar_termos" name="aceitar_termos" value="1" required>
+                                        <label class="form-check-label" for="aceitar_termos">
+                                            Li e aceito os <a href="termos-postagem.php" target="_blank">termos de postagem</a>
+                                        </label>
+                                        <div class="invalid-feedback">
+                                            Você precisa aceitar os termos de postagem para continuar.
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <div class="mt-4">
                                     <button type="submit" class="btn btn-primary">Enviar para Aprovação</button>
