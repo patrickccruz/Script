@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Inicia o buffer de saída
 session_start();
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
     header("Location: autenticacao.php");
@@ -65,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['reacao'])) {
         $stmt->bind_param("iis", $post_id, $user['id'], $tipo_reacao);
     }
     $stmt->execute();
-    header("Location: visualizar-post.php?id=" . $post_id);
+    echo "<script>window.location.href = 'visualizar-post.php?id=" . $post_id . "';</script>";
     exit;
 }
 
@@ -78,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['comentario'])) {
         $stmt = $conn->prepare("INSERT INTO blog_comentarios (post_id, user_id, comentario, parent_id) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("iisi", $post_id, $user['id'], $comentario, $parent_id);
         $stmt->execute();
-        header("Location: visualizar-post.php?id=" . $post_id);
+        echo "<script>window.location.href = 'visualizar-post.php?id=" . $post_id . "';</script>";
         exit;
     }
 }
