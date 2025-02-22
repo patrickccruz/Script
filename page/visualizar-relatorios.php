@@ -436,9 +436,13 @@
                                   </div>
                                 </div>
                                 <div class="row">
-                                  <div class="col-12">
+                                  <div class="col-6">
                                     <p class="mb-1"><i class="bi bi-geo me-2"></i><strong>Endereço de Partida:</strong></p>
                                     <p class="text-muted ms-4"><?php echo htmlspecialchars($row['endereco_partida']); ?></p>
+                                  </div>
+                                  <div class="col-6">
+                                    <p class="mb-1"><i class="bi bi-geo-fill me-2"></i><strong>Endereço de Chegada:</strong></p>
+                                    <p class="text-muted ms-4"><?php echo htmlspecialchars($row['endereco_chegada']); ?></p>
                                   </div>
                                 </div>
                               </div>

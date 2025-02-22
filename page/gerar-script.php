@@ -59,7 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $arquivoPath = '';
 
         // Primeiro inserir o registro para obter o ID
-        $stmt = $conn->prepare("INSERT INTO reports (user_id, data_chamado, numero_chamado, tipo_chamado, cliente, nome_informante, quantidade_patrimonios, tipo_patrimonio, km_inicial, km_final, hora_chegada, hora_saida, endereco_partida, endereco_chegada, informacoes_adicionais, status_chamado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $query = "INSERT INTO reports (user_id, data_chamado, numero_chamado, tipo_chamado, cliente, nome_informante, quantidade_patrimonios, tipo_patrimonio, km_inicial, km_final, hora_chegada, hora_saida, endereco_partida, endereco_chegada, informacoes_adicionais, status_chamado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        $stmt = $conn->prepare($query);
+        if ($stmt === false) {
+            throw new Exception("Erro na preparação da consulta: " . $conn->error);
+        }
+        
         $stmt->bind_param("isssssisisssssss", $user['id'], $dataChamado, $numeroChamado, $tipoChamado, $cliente, $nomeInformante, $quantidadeTotal, $tiposPatrimonioStr, $kmInicial, $kmFinal, $horaChegada, $horaSaida, $enderecoPartida, $enderecoChegada, $informacoesAdicionais, $statusChamado);
 
         if (!$stmt->execute()) {
