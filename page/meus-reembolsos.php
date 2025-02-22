@@ -202,5 +202,83 @@ if (isset($_SESSION['user']['id'])) {
   <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/vendor/apexcharts/apexcharts.min.js"></script>
   <script src="../assets/js/main.js"></script>
+
+  <!-- Filtro e Pesquisa Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('searchInput');
+      const filterMonth = document.getElementById('filterMonth');
+      const filterYear = document.getElementById('filterYear');
+      const cards = document.querySelectorAll('.col');
+
+      function getDateFromText(text) {
+        const match = text.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+        if (match) {
+          return {
+            day: match[1],
+            month: match[2],
+            year: match[3]
+          };
+        }
+        return null;
+      }
+
+      function filterCards() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedMonth = filterMonth.value;
+        const selectedYear = filterYear.value;
+
+        cards.forEach(card => {
+          const cardText = card.textContent.toLowerCase();
+          
+          // Extrai a data do cartão
+          const dateElement = Array.from(card.querySelectorAll('.card-text strong')).find(el => el.textContent.includes('Data do Chamado:'));
+          let dateInfo = null;
+          if (dateElement) {
+            const dateText = dateElement.nextSibling.textContent.trim();
+            dateInfo = getDateFromText(dateText);
+          }
+
+          // Aplica os filtros
+          const matchesSearch = searchTerm === '' || cardText.includes(searchTerm);
+          const matchesMonth = !selectedMonth || (dateInfo && parseInt(dateInfo.month) === parseInt(selectedMonth));
+          const matchesYear = !selectedYear || (dateInfo && dateInfo.year === selectedYear);
+
+          card.style.display = (matchesSearch && matchesMonth && matchesYear) ? '' : 'none';
+        });
+
+        updateEmptyState();
+      }
+
+      function updateEmptyState() {
+        const visibleCards = Array.from(cards).filter(card => card.style.display !== 'none');
+        const container = document.querySelector('.row.row-cols-1');
+        const existingEmptyState = container.querySelector('.empty-state');
+
+        if (visibleCards.length === 0) {
+          if (!existingEmptyState) {
+            const emptyStateDiv = document.createElement('div');
+            emptyStateDiv.className = 'col-12 empty-state';
+            emptyStateDiv.innerHTML = `
+              <i class="bi bi-search"></i>
+              <h4>Nenhum resultado encontrado</h4>
+              <p>Tente ajustar seus filtros de pesquisa.</p>
+            `;
+            container.appendChild(emptyStateDiv);
+          }
+        } else if (existingEmptyState) {
+          existingEmptyState.remove();
+        }
+      }
+
+      // Adiciona os event listeners
+      searchInput.addEventListener('input', filterCards);
+      filterMonth.addEventListener('change', filterCards);
+      filterYear.addEventListener('change', filterCards);
+
+      // Aplica os filtros inicialmente
+      filterCards();
+    });
+  </script>
 </body>
 </html> 

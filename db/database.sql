@@ -17,9 +17,11 @@ CREATE TABLE IF NOT EXISTS reports (
   user_id INT NOT NULL,
   data_chamado DATE NOT NULL,
   numero_chamado INT NOT NULL,
+  tipo_chamado ENUM('implantacao', 'sustentacao') NOT NULL,
   cliente VARCHAR(255) NOT NULL,
   nome_informante VARCHAR(255) NOT NULL,
   quantidade_patrimonios INT NOT NULL,
+  tipo_patrimonio VARCHAR(255) NOT NULL,
   km_inicial INT NOT NULL,
   km_final INT NOT NULL,
   hora_chegada TIME NOT NULL,
@@ -27,6 +29,7 @@ CREATE TABLE IF NOT EXISTS reports (
   endereco_partida VARCHAR(255) NOT NULL,
   endereco_chegada VARCHAR(255) NOT NULL,
   informacoes_adicionais TEXT,
+  status_chamado ENUM('resolvido', 'pendente', 'improdutivo') NOT NULL DEFAULT 'pendente',
   arquivo_path VARCHAR(255),
   FOREIGN KEY (user_id) REFERENCES users(id)
 );

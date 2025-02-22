@@ -68,104 +68,225 @@ if (isset($_SESSION['user']['id'])) {
     <link href="../assets/css/style.css" rel="stylesheet">
 
     <style>
+        .user-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .user-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #4154f1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .user-card:hover::before {
+            opacity: 1;
+        }
+
         .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
             padding: 5px 10px;
             border-radius: 15px;
             font-size: 0.85em;
             font-weight: 500;
+            transition: all 0.3s ease;
         }
+
         .status-admin {
-            background-color: #198754;
+            background: linear-gradient(135deg, #198754, #157347);
             color: white;
         }
+
         .status-user {
-            background-color: #6c757d;
+            background: linear-gradient(135deg, #6c757d, #565e64);
             color: white;
         }
-        .table-responsive {
-            margin: 15px 0;
+
+        .filter-section {
+            background: linear-gradient(to right, #f6f9ff, #ffffff);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
-        .action-buttons {
-            white-space: nowrap;
-        }
-        .search-filters {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
+
+        .search-box {
+            position: relative;
             margin-bottom: 20px;
         }
-        .btn-icon {
-            display: inline-flex;
+
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: #4154f1;
+            box-shadow: 0 0 0 0.2rem rgba(65, 84, 241, 0.25);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .form-select {
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            border-color: #4154f1;
+            box-shadow: 0 0 0 0.2rem rgba(65, 84, 241, 0.25);
+        }
+
+        .card-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: #6c757d;
+        }
+
+        .card-info i {
+            margin-right: 8px;
+            font-size: 0.9rem;
+        }
+
+        .card-footer {
+            background: transparent;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding: 1rem;
+        }
+
+        .btn {
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            display: flex;
             align-items: center;
             gap: 5px;
         }
-        .table th {
-            background-color: #f8f9fa;
+
+        .btn:hover {
+            transform: translateY(-2px);
         }
-        .table tbody tr:hover {
-            background-color: #f8f9fa;
-            transition: background-color 0.2s;
+
+        .btn i {
+            font-size: 0.9rem;
         }
-        .modal-header {
-            background-color: #f8f9fa;
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin: 2rem 0;
         }
-        .password-group {
-            position: relative;
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #4154f1;
+            margin-bottom: 1rem;
         }
-        .password-toggle {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
+
+        .empty-state h4 {
+            color: #012970;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state p {
             color: #6c757d;
+            margin-bottom: 1.5rem;
         }
-        .highlight {
-            background-color: #fff3cd;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-card-container {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            border-radius: 12px 12px 0 0;
+            background: linear-gradient(135deg, #4154f1, #2536b8);
+            padding: 1.5rem;
+            color: white;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4154f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 
 <body>
-    <!-- ======= Header ======= -->
-    <header id="header" class="header fixed-top d-flex align-items-center">
-        <div class="d-flex align-items-center justify-content-between">
-            <a href="../index.php" class="logo d-flex align-items-center">
-                <img src="../assets/img/Ico_geral.png" alt="Logo">
-                <span class="d-none d-lg-block">Sou + Digital</span>
-            </a>
-            <i class="bi bi-list toggle-sidebar-btn"></i>
-        </div>
 
-        <nav class="header-nav ms-auto">
-            <ul class="d-flex align-items-center">
-                <li class="nav-item dropdown pe-3">
-                    <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                        <span class="d-none d-md-block dropdown-toggle ps-2">
-                            <?php echo htmlspecialchars($user['name'] ?? 'Usuário', ENT_QUOTES, 'UTF-8'); ?>
-                        </span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="meu-perfil.php">
-                                <i class="bi bi-person"></i>
-                                <span>Meu Perfil</span>
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="sair.php">
-                                <i class="bi bi-box-arrow-right"></i>
-                                <span>Sair</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
-    </header>
 
-    <?php include_once('../includes/sidebar.php'); ?>
+    <!-- <?php include_once('../includes/sidebar.php'); ?> -->
 
     <main id="main" class="main">
         <div class="pagetitle">
@@ -224,12 +345,16 @@ if (isset($_SESSION['user']['id'])) {
                                 </button>
                             </div>
 
-                            <div class="search-filters">
-                                <div class="row g-3">
-                                    <div class="col-md-4">
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                            <input type="text" class="form-control" id="searchTable" placeholder="Pesquisar usuários...">
+                            <div class="loading">
+                                <div class="loading-spinner"></div>
+                            </div>
+
+                            <div class="filter-section">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="search-box">
+                                            <i class="bi bi-search"></i>
+                                            <input type="text" class="form-control" id="searchInput" placeholder="Pesquisar usuários...">
                                         </div>
                                     </div>
                                     <div class="col-md-3">
@@ -239,57 +364,75 @@ if (isset($_SESSION['user']['id'])) {
                                             <option value="0">Acesso Usuário</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-2">
-                                        <button class="btn btn-outline-secondary" id="clearFilters">
-                                            <i class="bi bi-x-circle"></i> Limpar filtros
-                                        </button>
+                                    <div class="col-md-3">
+                                        <select class="form-select" id="entriesPerPage">
+                                            <option value="10">10 registros por página</option>
+                                            <option value="25">25 registros por página</option>
+                                            <option value="50">50 registros por página</option>
+                                            <option value="100">100 registros por página</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="table-responsive">
-                                <table class="table table-hover datatable">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col" width="5%">#</th>
-                                            <th scope="col" width="25%">Nome</th>
-                                            <th scope="col" width="20%">Usuário</th>
-                                            <th scope="col" width="25%">Email</th>
-                                            <th scope="col" width="10%">Tipo</th>
-                                            <th scope="col" width="15%">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php while ($row = $result->fetch_assoc()): ?>
-                                            <tr>
-                                                <th scope="row"><?php echo htmlspecialchars($row['id']); ?></th>
-                                                <td><?php echo htmlspecialchars($row['name']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['username']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                                <td>
+                            <div class="row" id="usersContainer">
+                                <?php if ($result->num_rows > 0): ?>
+                                    <?php while ($row = $result->fetch_assoc()): ?>
+                                        <div class="col-md-6 col-lg-4 user-card-container">
+                                            <div class="card user-card h-100">
+                                                <div class="card-body">
                                                     <span class="status-badge <?php echo $row['is_admin'] ? 'status-admin' : 'status-user'; ?>">
                                                         <?php echo $row['is_admin'] ? 'Acesso Administrador' : 'Acesso Usuário'; ?>
                                                     </span>
-                                                </td>
-                                                <td class="action-buttons">
-                                                    <a href="editar-usuario.php?id=<?php echo $row['id']; ?>" 
-                                                       class="btn btn-primary btn-sm" 
-                                                       data-bs-toggle="tooltip" 
-                                                       title="Editar usuário">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </a>
-                                                    <button type="button" 
-                                                            class="btn btn-danger btn-sm" 
-                                                            onclick="confirmarExclusao(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['name'], ENT_QUOTES); ?>')"
-                                                            data-bs-toggle="tooltip" 
-                                                            title="Excluir usuário">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile; ?>
-                                    </tbody>
-                                </table>
+
+                                                    <h5 class="card-title">
+                                                        <?php echo htmlspecialchars($row['name']); ?>
+                                                    </h5>
+
+                                                    <div class="card-info">
+                                                        <i class="bi bi-person"></i>
+                                                        <?php echo htmlspecialchars($row['username']); ?>
+                                                    </div>
+
+                                                    <div class="card-info">
+                                                        <i class="bi bi-envelope"></i>
+                                                        <?php echo htmlspecialchars($row['email']); ?>
+                                                    </div>
+
+                                                    <div class="card-info">
+                                                        <i class="bi bi-key"></i>
+                                                        ID: <?php echo htmlspecialchars($row['id']); ?>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card-footer">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <a href="editar-usuario.php?id=<?php echo $row['id']; ?>" 
+                                                           class="btn btn-primary btn-sm">
+                                                            <i class="bi bi-pencil"></i> Editar
+                                                        </a>
+                                                        <button type="button" 
+                                                                class="btn btn-danger btn-sm"
+                                                                onclick="confirmarExclusao(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['name'], ENT_QUOTES); ?>')">
+                                                            <i class="bi bi-trash"></i> Excluir
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <div class="col-12">
+                                        <div class="empty-state">
+                                            <i class="bi bi-people"></i>
+                                            <h4>Nenhum usuário encontrado</h4>
+                                            <p>Não há usuários cadastrados no sistema.</p>
+                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoUsuarioModal">
+                                                <i class="bi bi-person-plus"></i> Adicionar Novo Usuário
+                                            </button>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -406,21 +549,115 @@ if (isset($_SESSION['user']['id'])) {
     <!-- Template Main JS File -->
     <script src="../assets/js/main.js"></script>
 
+    <!-- Script para garantir que o toggle da sidebar funcione -->
     <script>
-        // Inicializar tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleSidebarBtn = document.querySelector('.toggle-sidebar-btn');
+            if (toggleSidebarBtn) {
+                toggleSidebarBtn.addEventListener('click', function() {
+                    document.querySelector('body').classList.toggle('toggle-sidebar');
+                });
+            }
+        });
+    </script>
+
+    <!-- Adicionar SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let searchInput, filterAdmin, entriesPerPage, cards;
+
+        // Função global para limpar filtros
+        function clearFilters() {
+            searchInput.value = '';
+            filterAdmin.value = '';
+            entriesPerPage.value = '10';
+            filterCards();
+        }
+
+        // Função global para filtrar cards
+        function filterCards() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedType = filterAdmin.value;
+            const perPage = parseInt(entriesPerPage.value);
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const cardText = card.textContent.toLowerCase();
+                const isAdmin = card.querySelector('.status-admin') !== null;
+                const matchesSearch = searchTerm === '' || cardText.includes(searchTerm);
+                const matchesType = selectedType === '' || 
+                                  (selectedType === '1' && isAdmin) || 
+                                  (selectedType === '0' && !isAdmin);
+                const withinPagination = visibleCount < perPage;
+
+                if (matchesSearch && matchesType && withinPagination) {
+                    card.style.display = '';
+                    card.classList.add('animate__animated', 'animate__fadeIn');
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            updateEmptyState();
+        }
+
+        // Função global para atualizar estado vazio
+        function updateEmptyState() {
+            const visibleCards = Array.from(cards).filter(card => card.style.display !== 'none');
+            const container = document.getElementById('usersContainer');
+            const existingEmptyState = container.querySelector('.empty-state');
+
+            if (visibleCards.length === 0) {
+                if (!existingEmptyState) {
+                    const emptyStateDiv = document.createElement('div');
+                    emptyStateDiv.className = 'col-12';
+                    emptyStateDiv.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-search"></i>
+                            <h4>Nenhum resultado encontrado</h4>
+                            <p>Tente ajustar seus filtros de pesquisa.</p>
+                            <button type="button" class="btn btn-secondary" onclick="clearFilters()">
+                                <i class="bi bi-arrow-counterclockwise"></i> Limpar Filtros
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(emptyStateDiv);
+                }
+            } else if (existingEmptyState) {
+                existingEmptyState.remove();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar variáveis globais
+            searchInput = document.getElementById('searchInput');
+            filterAdmin = document.getElementById('filterAdmin');
+            entriesPerPage = document.getElementById('entriesPerPage');
+            cards = document.querySelectorAll('.user-card-container');
+
+            // Adicionar event listeners
+            searchInput.addEventListener('input', filterCards);
+            filterAdmin.addEventListener('change', filterCards);
+            entriesPerPage.addEventListener('change', filterCards);
+
+            // Inicializar tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Adicionar link para Animate.css
+            if (!document.querySelector('link[href*="animate.css"]')) {
+                const animateCssLink = document.createElement('link');
+                animateCssLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css';
+                animateCssLink.rel = 'stylesheet';
+                document.head.appendChild(animateCssLink);
+            }
         });
 
-        // Inicializar toasts
-        var toastElList = [].slice.call(document.querySelectorAll('.toast'))
-        var toastList = toastElList.map(function(toastEl) {
-            return new bootstrap.Toast(toastEl, { delay: 3000 })
-        });
-        toastList.forEach(toast => toast.show());
-
-        // Função para confirmar exclusão
+        // Função para confirmar exclusão com animação melhorada
         function confirmarExclusao(id, nome) {
             Swal.fire({
                 title: 'Confirmar exclusão?',
@@ -430,15 +667,22 @@ if (isset($_SESSION['user']['id'])) {
                 confirmButtonColor: '#dc3545',
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Sim, excluir',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
+                    document.querySelector('.loading').style.display = 'flex';
                     window.location.href = 'excluir-usuario.php?id=' + id;
                 }
             });
         }
 
-        // Preview de imagem
+        // Preview de imagem com feedback visual
         function previewImage(input) {
             const preview = document.getElementById('imagePreview');
             const previewImg = preview.querySelector('img');
@@ -448,111 +692,108 @@ if (isset($_SESSION['user']['id'])) {
                 reader.onload = function(e) {
                     previewImg.src = e.target.result;
                     preview.style.display = 'block';
+                    preview.classList.add('animate__animated', 'animate__fadeIn');
                 }
                 reader.readAsDataURL(input.files[0]);
             } else {
-                preview.style.display = 'none';
+                preview.classList.add('animate__animated', 'animate__fadeOut');
+                setTimeout(() => {
+                    preview.style.display = 'none';
+                    preview.classList.remove('animate__animated', 'animate__fadeOut');
+                }, 500);
             }
         }
 
-        // Toggle de senha
+        // Toggle de senha com feedback visual
         document.getElementById('togglePassword').addEventListener('click', function() {
             const password = document.getElementById('password');
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
             this.classList.toggle('bi-eye');
             this.classList.toggle('bi-eye-slash');
-        });
-
-        // Pesquisa na tabela
-        document.getElementById('searchTable').addEventListener('keyup', function() {
-            const searchText = this.value.toLowerCase();
-            const table = document.querySelector('.datatable');
-            const rows = table.getElementsByTagName('tr');
-
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                const cells = row.getElementsByTagName('td');
-                let found = false;
-
-                for (let j = 0; j < cells.length; j++) {
-                    const cell = cells[j];
-                    if (cell.textContent.toLowerCase().indexOf(searchText) > -1) {
-                        found = true;
-                        break;
-                    }
-                }
-
-                row.style.display = found ? '' : 'none';
-            }
-        });
-
-        // Filtro de tipo de usuário
-        document.getElementById('filterAdmin').addEventListener('change', function() {
-            const filterValue = this.value;
-            const table = document.querySelector('.datatable');
-            const rows = table.getElementsByTagName('tr');
-
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                const adminCell = row.querySelector('.status-badge');
-                
-                if (filterValue === '') {
-                    row.style.display = '';
-                } else {
-                    const isAdmin = adminCell.classList.contains('status-admin');
-                    row.style.display = (filterValue === '1' && isAdmin) || (filterValue === '0' && !isAdmin) ? '' : 'none';
-                }
-            }
-        });
-
-        // Limpar filtros
-        document.getElementById('clearFilters').addEventListener('click', function() {
-            document.getElementById('searchTable').value = '';
-            document.getElementById('filterAdmin').value = '';
-            const table = document.querySelector('.datatable');
-            const rows = table.getElementsByTagName('tr');
             
-            for (let i = 1; i < rows.length; i++) {
-                rows[i].style.display = '';
-            }
+            // Feedback visual
+            this.classList.add('animate__animated', 'animate__flipInY');
+            setTimeout(() => {
+                this.classList.remove('animate__animated', 'animate__flipInY');
+            }, 500);
         });
 
-        // Validação de força da senha
+        // Validação de força da senha com feedback visual melhorado
         document.getElementById('password').addEventListener('input', function() {
             const password = this.value;
             const strengthDiv = document.getElementById('passwordStrength');
             let strength = 0;
             let html = '';
 
-            if (password.match(/[a-z]+/)) strength += 1;
-            if (password.match(/[A-Z]+/)) strength += 1;
-            if (password.match(/[0-9]+/)) strength += 1;
-            if (password.match(/[$@#&!]+/)) strength += 1;
+            // Critérios de força
+            const criteria = {
+                length: password.length >= 8,
+                lowercase: /[a-z]/.test(password),
+                uppercase: /[A-Z]/.test(password),
+                numbers: /[0-9]/.test(password),
+                special: /[$@#&!]/.test(password)
+            };
 
-            switch (strength) {
-                case 0:
-                    html = '<div class="progress" style="height: 5px;"><div class="progress-bar bg-danger" style="width: 25%"></div></div><small class="text-danger">Senha muito fraca</small>';
-                    break;
-                case 1:
-                    html = '<div class="progress" style="height: 5px;"><div class="progress-bar bg-warning" style="width: 50%"></div></div><small class="text-warning">Senha fraca</small>';
-                    break;
-                case 2:
-                    html = '<div class="progress" style="height: 5px;"><div class="progress-bar bg-info" style="width: 75%"></div></div><small class="text-info">Senha média</small>';
-                    break;
-                case 3:
-                    html = '<div class="progress" style="height: 5px;"><div class="progress-bar bg-success" style="width: 100%"></div></div><small class="text-success">Senha forte</small>';
-                    break;
-                case 4:
-                    html = '<div class="progress" style="height: 5px;"><div class="progress-bar bg-success" style="width: 100%"></div></div><small class="text-success">Senha muito forte</small>';
-                    break;
-            }
+            // Calcular força
+            strength = Object.values(criteria).filter(Boolean).length;
+
+            // Gerar HTML com animação
+            const getStrengthClass = (s) => {
+                if (s <= 1) return 'danger';
+                if (s <= 2) return 'warning';
+                if (s <= 3) return 'info';
+                return 'success';
+            };
+
+            const strengthText = {
+                0: 'Muito fraca',
+                1: 'Fraca',
+                2: 'Média',
+                3: 'Forte',
+                4: 'Muito forte',
+                5: 'Excelente'
+            };
+
+            html = `
+                <div class="progress" style="height: 5px;">
+                    <div class="progress-bar bg-${getStrengthClass(strength)}" 
+                         style="width: ${(strength/5)*100}%"
+                         role="progressbar"
+                         aria-valuenow="${(strength/5)*100}"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+                </div>
+                <small class="text-${getStrengthClass(strength)} mt-1 d-block">
+                    ${strengthText[strength]}
+                </small>
+                <div class="criteria-list mt-2">
+                    <small class="d-block ${criteria.length ? 'text-success' : 'text-muted'}">
+                        <i class="bi ${criteria.length ? 'bi-check-circle-fill' : 'bi-x-circle'}"></i>
+                        Mínimo 8 caracteres
+                    </small>
+                    <small class="d-block ${criteria.lowercase ? 'text-success' : 'text-muted'}">
+                        <i class="bi ${criteria.lowercase ? 'bi-check-circle-fill' : 'bi-x-circle'}"></i>
+                        Letra minúscula
+                    </small>
+                    <small class="d-block ${criteria.uppercase ? 'text-success' : 'text-muted'}">
+                        <i class="bi ${criteria.uppercase ? 'bi-check-circle-fill' : 'bi-x-circle'}"></i>
+                        Letra maiúscula
+                    </small>
+                    <small class="d-block ${criteria.numbers ? 'text-success' : 'text-muted'}">
+                        <i class="bi ${criteria.numbers ? 'bi-check-circle-fill' : 'bi-x-circle'}"></i>
+                        Número
+                    </small>
+                    <small class="d-block ${criteria.special ? 'text-success' : 'text-muted'}">
+                        <i class="bi ${criteria.special ? 'bi-check-circle-fill' : 'bi-x-circle'}"></i>
+                        Caractere especial
+                    </small>
+                </div>
+            `;
 
             strengthDiv.innerHTML = html;
         });
     </script>
-
-    <!-- Adicionar SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html> 

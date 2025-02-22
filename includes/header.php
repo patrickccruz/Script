@@ -46,8 +46,19 @@ $total_nao_lidas = $result->fetch_assoc()['total'];
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Sou + Digital</title>
+    <!-- Favicons -->
+    <link href="<?php echo isset($is_page) ? '../' : ''; ?>assets/img/Icon geral.png" rel="icon">
+    <link href="<?php echo isset($is_page) ? '../' : ''; ?>assets/img/Icon geral.png" rel="apple-touch-icon">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i" rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
     <link href="<?php echo isset($is_page) ? '../' : ''; ?>assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo isset($is_page) ? '../' : ''; ?>assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="<?php echo isset($is_page) ? '../' : ''; ?>assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="<?php echo isset($is_page) ? '../' : ''; ?>assets/vendor/remixicon/remixicon.css" rel="stylesheet">
     <link href="<?php echo isset($is_page) ? '../' : ''; ?>assets/css/style.css" rel="stylesheet">
     <link href="<?php echo isset($is_page) ? '../' : ''; ?>assets/css/notifications.css" rel="stylesheet">
 </head>
@@ -164,9 +175,6 @@ $total_nao_lidas = $result->fetch_assoc()['total'];
 
                 <li class="nav-item dropdown pe-3">
                     <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                        <?php if (isset($user['profile_image']) && !empty($user['profile_image'])): ?>
-                            <img src="<?php echo isset($is_page) ? '../' : ''; ?><?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile" class="rounded-circle">
-                        <?php endif; ?>
                         <span class="d-none d-md-block dropdown-toggle ps-2">
                             <?php echo htmlspecialchars($user['name']); ?>
                         </span>
