@@ -34,14 +34,20 @@ CREATE TABLE IF NOT EXISTS reports (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+-- Tabela de reembolsos atualizada com novos campos
 CREATE TABLE IF NOT EXISTS reembolsos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   data_chamado DATE NOT NULL,
-  numero_chamado INT NOT NULL,
+  numero_chamado INT NULL, -- Alterado para INT e permitindo NULL
   informacoes_adicionais TEXT,
-  arquivo_path VARCHAR(255),
+  valor DECIMAL(10,2) NOT NULL, -- Campo para o valor do reembolso
+  tipo_reembolso ENUM('estacionamento', 'pedagio', 'alimentacao', 'transporte', 'hospedagem', 'outros') NOT NULL,
+  status ENUM('pendente', 'aprovado', 'criticado', 'reprovado') NOT NULL DEFAULT 'pendente',
+  comentario_admin TEXT, -- Campo para feedback do administrador
+  arquivo_path TEXT, -- Alterado para TEXT para permitir múltiplos arquivos
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 

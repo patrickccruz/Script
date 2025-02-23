@@ -27,8 +27,8 @@ function create_upload_path($base_path, $subdirs) {
  * @return string Nome único do arquivo
  */
 function generate_unique_filename($original_name, $prefix = '') {
-    $extension = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
-    return $prefix . uniqid() . '_' . time() . '.' . $extension;
+    $ext = pathinfo($original_name, PATHINFO_EXTENSION);
+    return $prefix . uniqid() . '_' . mt_rand() . '.' . $ext;
 }
 
 /**
@@ -38,7 +38,13 @@ function generate_unique_filename($original_name, $prefix = '') {
  * @return bool True se o arquivo foi movido com sucesso
  */
 function move_uploaded_file_safe($tmp_name, $destination) {
-    return move_uploaded_file($tmp_name, $destination);
+    // Criar diretório se não existir
+    $dir = dirname($destination);
+    if (!file_exists('../' . $dir)) {
+        mkdir('../' . $dir, 0777, true);
+    }
+    
+    return move_uploaded_file($tmp_name, '../' . $destination);
 }
 
 /**
@@ -76,41 +82,17 @@ function remove_file_and_empty_dir($file_path) {
  * @return string Caminho relativo para upload
  */
 function get_upload_path($type, $params = []) {
-    // Determinar o caminho base correto
-    $root_dir = $_SERVER['DOCUMENT_ROOT'] . '/Script';
-    $base_path = $root_dir . '/uploads';
+    $base_path = 'uploads';
     
-    // Log para debug
-    error_log("Root dir: " . $root_dir);
-    error_log("Base path: " . $base_path);
-    
-    // Criar o caminho absoluto
-    $absolute_path = '';
-    switch ($type) {
-        case 'profile':
-            $absolute_path = create_upload_path($base_path, ['users', $params['user_id'], 'profile']);
-            break;
-            
-        case 'blog':
-            $absolute_path = create_upload_path($base_path, ['blog', $params['post_id']]);
-            break;
-            
+    switch($type) {
         case 'reimbursement':
-            $absolute_path = create_upload_path($base_path, ['reimbursements', $params['reimbursement_id']]);
-            break;
-            
-        case 'documents':
-            $absolute_path = create_upload_path($base_path, ['users', $params['user_id'], 'documents']);
-            break;
-            
-        case 'reports':
-            $absolute_path = create_upload_path($base_path, ['reports', $params['report_id']]);
-            break;
-            
+            if (!isset($params['reimbursement_id'])) {
+                throw new Exception('ID do reembolso é necessário');
+            }
+            return $base_path . '/reimbursements/' . $params['reimbursement_id'];
+        case 'profile':
+            return $base_path . '/profiles';
         default:
-            throw new Exception('Tipo de upload inválido');
+            return $base_path . '/misc';
     }
-    
-    error_log("Absolute path: " . $absolute_path);
-    return $absolute_path;
 } 
