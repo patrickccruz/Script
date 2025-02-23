@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['update_success'] = "Usuário não está logado corretamente.";
     }
     
-    header("Location: profile.php");
+    header("Location: meu-perfil.php");
     exit;
 }
 ?>

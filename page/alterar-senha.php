@@ -4,7 +4,8 @@ require_once '../db.php';
 
 // Verificação de autenticação
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header('Location: user-login.php');
+    $_SESSION['password_error'] = "Você precisa estar logado para alterar a senha.";
+    header('Location: meu-perfil.php');
     exit;
 }
 
@@ -15,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['password_error'] = "Token de segurança inválido. Por favor, tente novamente.";
         error_log("CSRF token inválido. Recebido: " . ($_POST['csrf_token'] ?? 'não definido') . 
                  ", Esperado: " . ($_SESSION['csrf_token'] ?? 'não definido'));
-        header("Location: profile.php");
+        header("Location: meu-perfil.php");
         exit;
     }
 }
@@ -106,7 +107,7 @@ try {
 // Limpar o token CSRF após o uso
 unset($_SESSION['csrf_token']);
 
-header("Location: profile.php");
+header("Location: meu-perfil.php");
 exit;
 ?>
 
