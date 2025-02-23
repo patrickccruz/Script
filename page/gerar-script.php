@@ -5,8 +5,15 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
     exit;
 }
 
-require_once '../includes/upload_functions.php';
 $is_page = true;
+
+if (isset($_SESSION['user'])) {
+    $user = $_SESSION['user'];
+} else {
+    $user = ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
+}
+
+require_once '../includes/upload_functions.php';
 
 // Conexão com o banco de dados
 $conn = new mysqli('localhost', 'root', '', 'sou_digital');
@@ -16,12 +23,6 @@ if ($conn->connect_error) {
 
 $error_message = '';
 $success_message = '';
-
-if (isset($_SESSION['user'])) {
-    $user = $_SESSION['user'];
-} else {
-    $user = ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
-}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
@@ -198,256 +199,212 @@ include_once '../includes/header.php';
     }
 </style>
 
-<body>
-    <?php include_once '../includes/sidebar.php'; ?>
+<?php include_once '../includes/sidebar.php'; ?>
 
-    <main id="main" class="main">
-        <section class="section">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="pagetitle">
-                                <h1>Relatório de Atendimento</h1>
-                                <nav>
-                                    <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="../index.php">Inicial</a></li>
-                                        <li class="breadcrumb-item active">Gerar Script</li>
-                                    </ol>
-                                </nav>
+<main id="main" class="main">
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="pagetitle">
+                            <h1>Relatório de Atendimento</h1>
+                            <nav>
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="../index.php">Inicial</a></li>
+                                    <li class="breadcrumb-item active">Gerar Script</li>
+                                </ol>
+                            </nav>
+                        </div>
+
+                        <form id="scriptForm" enctype="multipart/form-data" method="POST">
+                            <!-- Seção: Informações Básicas do Chamado -->
+                            <div class="form-section">
+                                <h5 class="form-section-title">
+                                    <i class="bi bi-info-circle"></i>
+                                    Informações Básicas do Chamado
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-floating mb-3">
+                                            <input type="date" class="form-control" id="dataChamado" name="dataChamado" value="<?php echo date('Y-m-d'); ?>" required>
+                                            <label for="dataChamado" class="required-field">Data do chamado</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-floating mb-3">
+                                            <input type="number" class="form-control" id="numeroChamado" name="numeroChamado" required>
+                                            <label for="numeroChamado" class="required-field">Número do chamado</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-floating mb-3">
+                                            <select class="form-select" id="tipoChamado" name="tipoChamado" required>
+                                                <option value="">Selecione o tipo</option>
+                                                <option value="implantacao">Implantação</option>
+                                                <option value="sustentacao">Sustentação</option>
+                                            </select>
+                                            <label for="tipoChamado" class="required-field">Tipo de chamado</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="text" class="form-control" id="cliente" name="cliente" required>
+                                            <label for="cliente" class="required-field">Cliente</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="text" class="form-control" id="nomeInformante" name="nomeInformante" required>
+                                            <label for="nomeInformante" class="required-field">Nome de quem informou o chamado</label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <form id="scriptForm" enctype="multipart/form-data" method="POST">
-                                <!-- Seção: Informações Básicas do Chamado -->
-                                <div class="form-section">
-                                    <h5 class="form-section-title">
-                                        <i class="bi bi-info-circle"></i>
-                                        Informações Básicas do Chamado
-                                    </h5>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-floating mb-3">
-                                                <input type="date" class="form-control" id="dataChamado" name="dataChamado" value="<?php echo date('Y-m-d'); ?>" required>
-                                                <label for="dataChamado" class="required-field">Data do chamado</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-floating mb-3">
-                                                <input type="number" class="form-control" id="numeroChamado" name="numeroChamado" required>
-                                                <label for="numeroChamado" class="required-field">Número do chamado</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-floating mb-3">
-                                                <select class="form-select" id="tipoChamado" name="tipoChamado" required>
-                                                    <option value="">Selecione o tipo</option>
-                                                    <option value="implantacao">Implantação</option>
-                                                    <option value="sustentacao">Sustentação</option>
-                                                </select>
-                                                <label for="tipoChamado" class="required-field">Tipo de chamado</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-floating mb-3">
-                                                <input type="text" class="form-control" id="cliente" name="cliente" required>
-                                                <label for="cliente" class="required-field">Cliente</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-floating mb-3">
-                                                <input type="text" class="form-control" id="nomeInformante" name="nomeInformante" required>
-                                                <label for="nomeInformante" class="required-field">Nome de quem informou o chamado</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Seção: Patrimônios -->
-                                <div class="form-section">
-                                    <h5 class="form-section-title">
-                                        <i class="bi bi-box-seam"></i>
-                                        Patrimônios Tratados
-                                    </h5>
-                                    <div id="patrimoniosContainer">
-                                        <div class="patrimonio-row">
-                                            <div class="row">
-                                                <div class="col-md-5">
-                                                    <div class="form-floating">
-                                                        <input type="number" class="form-control quantidade-patrimonio" name="quantidadePatrimonios[]" required min="1" value="1">
-                                                        <label class="required-field">Quantidade</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-5">
-                                                    <div class="form-floating">
-                                                        <input type="text" class="form-control tipo-patrimonio" name="tipoPatrimonio[]" required placeholder="Ex: Notebook, Desktop, Monitor">
-                                                        <label class="required-field">Tipo de patrimônio</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-2 d-flex align-items-center justify-content-center">
-                                                    <button type="button" class="btn btn-success add-patrimonio" title="Adicionar mais patrimônios">
-                                                        <i class="bi bi-plus-lg"></i>
-                                                    </button>
+                            <!-- Seção: Patrimônios -->
+                            <div class="form-section">
+                                <h5 class="form-section-title">
+                                    <i class="bi bi-box-seam"></i>
+                                    Patrimônios Tratados
+                                </h5>
+                                <div id="patrimoniosContainer">
+                                    <div class="patrimonio-row">
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <div class="form-floating">
+                                                    <input type="number" class="form-control quantidade-patrimonio" name="quantidadePatrimonios[]" required min="1" value="1">
+                                                    <label class="required-field">Quantidade</label>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Seção: Informações de Deslocamento -->
-                                <div class="form-section">
-                                    <h5 class="form-section-title">
-                                        <i class="bi bi-geo-alt"></i>
-                                        Informações de Deslocamento
-                                    </h5>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-floating mb-3">
-                                                <input type="number" class="form-control" id="kmInicial" name="kmInicial" required>
-                                                <label for="kmInicial" class="required-field">KM inicial</label>
+                                            <div class="col-md-5">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control tipo-patrimonio" name="tipoPatrimonio[]" required placeholder="Ex: Notebook, Desktop, Monitor">
+                                                    <label class="required-field">Tipo de patrimônio</label>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-floating mb-3">
-                                                <input type="number" class="form-control" id="kmFinal" name="kmFinal" required>
-                                                <label for="kmFinal" class="required-field">KM final</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-floating mb-3">
-                                                <input type="time" class="form-control" id="horaChegada" name="horaChegada" required>
-                                                <label for="horaChegada" class="required-field">Horário de chegada</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-floating mb-3">
-                                                <input type="time" class="form-control" id="horaSaida" name="horaSaida" required>
-                                                <label for="horaSaida" class="required-field">Horário de saída</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-floating mb-3">
-                                                <input type="text" class="form-control" id="enderecoPartida" name="enderecoPartida" required>
-                                                <label for="enderecoPartida" class="required-field">Endereço de partida</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-floating mb-3">
-                                                <input type="text" class="form-control" id="enderecoChegada" name="enderecoChegada" required>
-                                                <label for="enderecoChegada" class="required-field">Endereço de chegada</label>
+                                            <div class="col-md-2 d-flex align-items-center justify-content-center">
+                                                <button type="button" class="btn btn-success add-patrimonio" title="Adicionar mais patrimônios">
+                                                    <i class="bi bi-plus-lg"></i>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <!-- Seção: Status e Descrição -->
-                                <div class="form-section">
-                                    <h5 class="form-section-title">
-                                        <i class="bi bi-clipboard-check"></i>
-                                        Status e Descrição
-                                    </h5>
-                                    <div class="form-floating mb-3">
-                                        <select class="form-select" id="statusChamado" name="statusChamado" required>
-                                            <option value="">Selecione o status</option>
-                                            <option value="resolvido">Resolvido</option>
-                                            <option value="pendente">Pendente</option>
-                                            <option value="improdutivo">Improdutivo</option>
-                                        </select>
-                                        <label for="statusChamado" class="required-field">Status do chamado</label>
+                            <!-- Seção: Informações de Deslocamento -->
+                            <div class="form-section">
+                                <h5 class="form-section-title">
+                                    <i class="bi bi-geo-alt"></i>
+                                    Informações de Deslocamento
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="number" class="form-control" id="kmInicial" name="kmInicial" required>
+                                            <label for="kmInicial" class="required-field">KM inicial</label>
+                                        </div>
                                     </div>
-
-                                    <div class="form-floating mb-3">
-                                        <textarea class="form-control" id="informacoesAdicionais" name="informacoesAdicionais" 
-                                                style="height: 250px" 
-                                                data-bs-toggle="tooltip" 
-                                                data-bs-placement="top" 
-                                                title="Descreva detalhadamente: 1) O que foi realizado no chamado; 2) Problemas encontrados; 3) Soluções aplicadas; 4) Observações importantes"
-                                                required></textarea>
-                                        <label for="informacoesAdicionais" class="required-field">Descrição detalhada do atendimento</label>
-                                    </div>
-
-                                    <div class="form-floating mb-3">
-                                        <input type="file" class="form-control" id="arquivo" name="arquivo" accept=".pdf">
-                                        <label for="arquivo">Anexar RAT (PDF)</label>
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="number" class="form-control" id="kmFinal" name="kmFinal" required>
+                                            <label for="kmFinal" class="required-field">KM final</label>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <!-- Ações -->
-                                <div class="d-flex justify-content-between">
-                                    <button type="button" class="btn btn-outline-danger" onclick="limparFormulario()">
-                                        <i class="bi bi-trash me-2"></i>Apagar Tudo
-                                    </button>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-check-circle me-2"></i>Salvar e Enviar
-                                    </button>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="time" class="form-control" id="horaChegada" name="horaChegada" required>
+                                            <label for="horaChegada" class="required-field">Horário de chegada</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="time" class="form-control" id="horaSaida" name="horaSaida" required>
+                                            <label for="horaSaida" class="required-field">Horário de saída</label>
+                                        </div>
+                                    </div>
                                 </div>
-                            </form>
-                        </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="text" class="form-control" id="enderecoPartida" name="enderecoPartida" required>
+                                            <label for="enderecoPartida" class="required-field">Endereço de partida</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="text" class="form-control" id="enderecoChegada" name="enderecoChegada" required>
+                                            <label for="enderecoChegada" class="required-field">Endereço de chegada</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Seção: Status e Descrição -->
+                            <div class="form-section">
+                                <h5 class="form-section-title">
+                                    <i class="bi bi-clipboard-check"></i>
+                                    Status e Descrição
+                                </h5>
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="statusChamado" name="statusChamado" required>
+                                        <option value="">Selecione o status</option>
+                                        <option value="resolvido">Resolvido</option>
+                                        <option value="pendente">Pendente</option>
+                                        <option value="improdutivo">Improdutivo</option>
+                                    </select>
+                                    <label for="statusChamado" class="required-field">Status do chamado</label>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <textarea class="form-control" id="informacoesAdicionais" name="informacoesAdicionais" 
+                                            style="height: 250px" 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top" 
+                                            title="Descreva detalhadamente: 1) O que foi realizado no chamado; 2) Problemas encontrados; 3) Soluções aplicadas; 4) Observações importantes"
+                                            required></textarea>
+                                    <label for="informacoesAdicionais" class="required-field">Descrição detalhada do atendimento</label>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <input type="file" class="form-control" id="arquivo" name="arquivo" accept=".pdf">
+                                    <label for="arquivo">Anexar RAT (PDF)</label>
+                                </div>
+                            </div>
+
+                            <!-- Ações -->
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-danger" onclick="limparFormulario()">
+                                    <i class="bi bi-trash me-2"></i>Apagar Tudo
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i>Salvar e Enviar
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
-
-    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
-    <!-- Vendor JS Files -->
-    <script src="../assets/vendor/apexcharts/apexcharts.min.js"></script>
-    <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="../assets/vendor/chart.js/chart.umd.js"></script>
-    <script src="../assets/vendor/echarts/echarts.min.js"></script>
-    <script src="../assets/vendor/quill/quill.min.js"></script>
-    <script src="../assets/vendor/simple-datatables/simple-datatables.js"></script>
-    <script src="../assets/vendor/tinymce/tinymce.min.js"></script>
-    <script src="../assets/vendor/php-email-form/validate.js"></script>
-
-    <?php include_once '../includes/footer.php'; ?>
-
-    <!-- Modal de Sucesso -->
-    <div class="modal fade" id="sucessoModal" tabindex="-1" aria-labelledby="sucessoModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="sucessoModalLabel">Sucesso</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p id="mensagemSucesso"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                </div>
-            </div>
         </div>
-    </div>
+    </section>
+</main>
 
-    <!-- Modal de Erro -->
-    <div class="modal fade" id="erroModal" tabindex="-1" aria-labelledby="erroModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="erroModalLabel">Erro</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p id="mensagemErro"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+    <i class="bi bi-arrow-up-short"></i>
+</a>
 
-    <script>
+<?php include_once '../includes/footer.php'; ?>
+
+<!-- Scripts específicos da página -->
+<script>
     // Função para limpar o formulário
     function limparFormulario() {
         if (confirm('Tem certeza que deseja limpar todos os campos?')) {
@@ -550,6 +507,6 @@ include_once '../includes/header.php';
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
-    </script>
+</script>
 </body>
 </html> 
