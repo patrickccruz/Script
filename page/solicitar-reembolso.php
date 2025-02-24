@@ -177,6 +177,18 @@
                 </nav>
               </div>
 
+              <!-- Novo alerta com observações importantes -->
+              <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <h4 class="alert-heading"><i class="bi bi-info-circle"></i> Observações Importantes:</h4>
+                <ul>
+                  <li>Anexe todos os comprovantes fiscais (notas fiscais, recibos, cupons) legíveis</li>
+                  <li>O reembolso será analisado em até 5 dias úteis</li>
+                  <li>Valores acima de R$ 500,00 precisam de aprovação adicional</li>
+                  <li>Mantenha os comprovantes originais por 6 meses</li>
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+
               <?php if (isset($_SESSION['error'])): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                   <?php 
@@ -233,6 +245,14 @@
                   <label for="arquivos" class="form-label">Comprovantes (Notas fiscais, recibos, etc.)</label>
                   <input type="file" class="form-control" id="arquivos" name="arquivos[]" accept=".pdf,image/*" multiple required>
                   <div id="preview-container"></div>
+                </div>
+
+                <!-- Nova caixa de confirmação dos termos -->
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="concordoTermos" required>
+                  <label class="form-check-label" for="concordoTermos">
+                    Declaro que li e concordo com os termos para solicitação de reembolso. Confirmo que todos os dados e documentos enviados são verdadeiros.
+                  </label>
                 </div>
 
                 <div class="row mt-4">
