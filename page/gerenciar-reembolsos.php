@@ -5,10 +5,16 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true || !isset($_S
     exit;
 }
 
+$is_page = true;
+require_once '../includes/upload_functions.php';
+
 $conn = new mysqli('localhost', 'root', '', 'sou_digital');
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
+// Buscar dados do usuário logado
+$user = isset($_SESSION['user']) ? $_SESSION['user'] : ['id' => 0, 'name' => 'Usuário', 'username' => 'username'];
 
 // Processar ações de aprovação/rejeição/crítica
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -88,7 +94,6 @@ $sql = "SELECT r.*, u.name as user_name, u.email as user_email
 $result = $conn->query($sql);
 $reembolsos = $result->fetch_all(MYSQLI_ASSOC);
 
-$is_page = true;
 include_once '../includes/header.php';
 ?>
 
@@ -279,6 +284,17 @@ include_once '../includes/header.php';
             </div>
         </section>
     </main>
+
+    <footer id="footer" class="footer">
+        <div class="copyright">
+            &copy; Copyright <strong><span>Sou + Digital</span></strong>. Todos os direitos reservados
+        </div>
+        <div class="credits">
+            Desenvolvido por <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C Cruz</a>
+        </div>
+    </footer>
+
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
     <script>
         // Confirmar ações importantes
