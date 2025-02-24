@@ -85,7 +85,7 @@ include_once '../includes/header.php';
         margin-bottom: 15px;
     }
 </style>
-
+<?php include_once '../includes/header.php'; ?>
 <?php include_once '../includes/sidebar.php'; ?>
 
 <main id="main" class="main">
