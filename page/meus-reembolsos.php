@@ -224,11 +224,11 @@ include_once '../includes/header.php';
                                 $ext = strtolower(pathinfo($arquivo, PATHINFO_EXTENSION));
                                 if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])):
                               ?>
-                                <a href="/script/<?php echo $arquivo; ?>" target="_blank">
-                                  <img src="/script/<?php echo $arquivo; ?>" class="arquivo-preview" alt="Comprovante">
+                                <a href="../<?php echo $arquivo; ?>" target="_blank">
+                                  <img src="../<?php echo $arquivo; ?>" class="arquivo-preview" alt="Comprovante">
                                 </a>
                               <?php else: ?>
-                                <a href="/script/<?php echo $arquivo; ?>" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <a href="../<?php echo $arquivo; ?>" target="_blank" class="btn btn-outline-primary btn-sm">
                                   <i class="bi bi-file-earmark-text"></i>
                                   Ver Arquivo
                                 </a>

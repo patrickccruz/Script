@@ -245,7 +245,7 @@ include_once '../includes/header.php';
                                                     <i class="bi bi-eye"></i> Ver relatório
                                                 </button>
                                                 <?php if ($row['arquivo_path']): ?>
-                                                    <a href="view-pdf.php?file=<?php echo htmlspecialchars($row['arquivo_path']); ?>" 
+                                                    <a href="view-pdf.php?file=<?php echo urlencode($row['arquivo_path']); ?>" 
                                                        class="btn btn-info btn-sm" 
                                                        target="_blank">
                                                         <i class="bi bi-file-pdf"></i> Ver RAT
@@ -430,7 +430,7 @@ include_once '../includes/header.php';
                                             </div>
                                             <div class="modal-footer">
                                                 <?php if ($row['arquivo_path']): ?>
-                                                    <a href="view-pdf.php?file=<?php echo htmlspecialchars($row['arquivo_path']); ?>" 
+                                                    <a href="view-pdf.php?file=<?php echo urlencode($row['arquivo_path']); ?>" 
                                                        class="btn btn-info" 
                                                        target="_blank">
                                                         <i class="bi bi-file-pdf"></i> Abrir RAT

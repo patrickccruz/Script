@@ -148,7 +148,7 @@
                               }
                               
                               // Ajusta o caminho do arquivo
-                              $caminhoArquivo = str_replace('./uploads/', './uploads/', $arquivo);
+                              $caminhoArquivo = '../' . $arquivo;
                           ?>
                             <a href="<?php echo htmlspecialchars($caminhoArquivo); ?>" 
                                target="_blank" 

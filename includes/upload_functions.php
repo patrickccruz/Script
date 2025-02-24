@@ -38,13 +38,16 @@ function generate_unique_filename($original_name, $prefix = '') {
  * @return bool True se o arquivo foi movido com sucesso
  */
 function move_uploaded_file_safe($tmp_name, $destination) {
+    // Converter caminho relativo para absoluto
+    $absolute_path = dirname(__DIR__) . '/' . $destination;
+    
     // Criar diretório se não existir
-    $dir = dirname($destination);
-    if (!file_exists('../' . $dir)) {
-        mkdir('../' . $dir, 0777, true);
+    $dir = dirname($absolute_path);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
     }
     
-    return move_uploaded_file($tmp_name, '../' . $destination);
+    return move_uploaded_file($tmp_name, $absolute_path);
 }
 
 /**
@@ -82,17 +85,44 @@ function remove_file_and_empty_dir($file_path) {
  * @return string Caminho relativo para upload
  */
 function get_upload_path($type, $params = []) {
-    $base_path = 'uploads';
+    $base_path = dirname(__DIR__) . '/uploads';
+    
+    // Criar o diretório base se não existir
+    if (!is_dir($base_path)) {
+        mkdir($base_path, 0777, true);
+    }
     
     switch($type) {
         case 'reimbursement':
             if (!isset($params['reimbursement_id'])) {
                 throw new Exception('ID do reembolso é necessário');
             }
-            return $base_path . '/reimbursements/' . $params['reimbursement_id'];
+            $path = $base_path . '/reimbursements/' . $params['reimbursement_id'];
+            break;
+        case 'reports':
+            if (!isset($params['report_id'])) {
+                throw new Exception('ID do relatório é necessário');
+            }
+            $path = $base_path . '/reports/' . $params['report_id'];
+            break;
         case 'profile':
-            return $base_path . '/profiles';
+            $path = $base_path . '/profiles';
+            break;
+        case 'blog':
+            if (!isset($params['post_id'])) {
+                throw new Exception('ID do post é necessário');
+            }
+            $path = $base_path . '/blog/' . $params['post_id'];
+            break;
         default:
-            return $base_path . '/misc';
+            $path = $base_path . '/misc';
     }
+    
+    // Criar o diretório específico se não existir
+    if (!is_dir($path)) {
+        mkdir($path, 0777, true);
+    }
+    
+    // Retornar o caminho relativo para armazenamento no banco de dados
+    return 'uploads' . substr($path, strlen($base_path));
 } 

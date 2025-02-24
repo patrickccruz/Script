@@ -434,7 +434,7 @@ $result = $stmt->get_result();
                                                         <i class="bi bi-eye"></i> Detalhes
                                                     </button>
                                                     <?php if ($row['arquivo_path']): ?>
-                                                        <a href="view-pdf.php?file=<?php echo htmlspecialchars($row['arquivo_path']); ?>" 
+                                                        <a href="view-pdf.php?file=<?php echo urlencode($row['arquivo_path']); ?>" 
                                                            class="btn btn-info btn-sm" 
                                                            target="_blank">
                                                             <i class="bi bi-file-pdf"></i> RAT
@@ -646,7 +646,7 @@ $result = $stmt->get_result();
                                                                             <?php if ($row['arquivo_path']): ?>
                                                                                 <div class="mt-2">
                                                                                     <p class="mb-1">RAT atual:</p>
-                                                                                    <a href="view-pdf.php?file=<?php echo htmlspecialchars($row['arquivo_path']); ?>" 
+                                                                                    <a href="view-pdf.php?file=<?php echo urlencode($row['arquivo_path']); ?>" 
                                                                                        class="btn btn-info btn-sm" 
                                                                                        target="_blank">
                                                                                         <i class="bi bi-file-pdf"></i> Visualizar RAT atual
@@ -661,7 +661,7 @@ $result = $stmt->get_result();
                                                     </div>
                                                     <div class="modal-footer">
                                                         <?php if ($row['arquivo_path']): ?>
-                                                            <a href="view-pdf.php?file=<?php echo htmlspecialchars($row['arquivo_path']); ?>" 
+                                                            <a href="view-pdf.php?file=<?php echo urlencode($row['arquivo_path']); ?>" 
                                                                class="btn btn-info" 
                                                                target="_blank">
                                                                 <i class="bi bi-file-pdf"></i> Abrir RAT
