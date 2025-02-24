@@ -31,7 +31,7 @@ if (isset($_SESSION['user']['id'])) {
     $stmt->close();
 }
 
-include_once '../includes/header.php';
+// Removi a chamada duplicada: include_once '../includes/header.php';
 ?>
 
 <!-- Estilos específicos da página -->
