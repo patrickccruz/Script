@@ -1,37 +1,61 @@
 <?php
-include('../db.php'); // Certifique-se de que o caminho para db.php está correto
+// Habilitar exibição de erros
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-// Verifique se a conexão foi bem-sucedida
-if (!$conn) {
-    die("Falha na conexão: " . mysqli_connect_error());
-}
+// Incluir conexão com o banco
+require_once __DIR__ . '/../db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $username = trim($_POST['username']);
-    $password = password_hash(trim($_POST['password']), PASSWORD_DEFAULT); // Hash da senha
-
-    // Verificar se o email ou username já existem
-    $check_sql = "SELECT * FROM users WHERE email=? OR username=?";
-    $stmt = $conn->prepare($check_sql);
-    $stmt->bind_param("ss", $email, $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        echo "<script>alert('Erro: Email ou Nome de usuário já existem.');</script>";
-    } else {
-        $sql = "INSERT INTO users (name, email, username, password) VALUES (?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssss", $name, $email, $username, $password);
-        if ($stmt->execute() === TRUE) {
-            echo "<script>alert('Usuário criado com sucesso!'); window.location.href='autenticacao.php';</script>";
-        } else {
-            echo "Error: " . $sql . "<br>" . $conn->error;
+    try {
+        // Validar e sanitizar dados
+        $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
+        $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
+        $password = $_POST['password'];
+        $confirm_password = $_POST['confirm_password'];
+        
+        // Validações
+        if (empty($name) || empty($username) || empty($password)) {
+            throw new Exception("Todos os campos são obrigatórios");
         }
+        
+        if ($password !== $confirm_password) {
+            throw new Exception("As senhas não coincidem");
+        }
+        
+        // Verificar se usuário já existe
+        $stmt = $conn->prepare("SELECT id FROM usuarios WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            throw new Exception("Este nome de usuário já está em uso");
+        }
+        
+        // Hash da senha
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        
+        // Inserir novo usuário
+        $stmt = $conn->prepare("INSERT INTO usuarios (name, username, password, role) VALUES (?, ?, ?, 'user')");
+        $stmt->bind_param("sss", $name, $username, $password_hash);
+        
+        if ($stmt->execute()) {
+            $_SESSION['success'] = "Conta criada com sucesso! Faça login para continuar.";
+            header("Location: ../login.php");
+            exit;
+        } else {
+            throw new Exception("Erro ao criar conta: " . $conn->error);
+        }
+        
+    } catch (Exception $e) {
+        $_SESSION['error'] = $e->getMessage();
+        header("Location: cadastro.php");
+        exit;
     }
-    $stmt->close();
+} else {
+    header("Location: cadastro.php");
+    exit;
 }
-$conn->close();
 ?>

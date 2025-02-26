@@ -1,6 +1,13 @@
 <?php
+// Habilitar exibição de erros
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Incluir conexão com o banco
+require_once __DIR__ . '/../db.php';
+
 session_start();
-require_once '../db.php';
 
 // Limpar sessão anterior se existir
 if (isset($_SESSION['loggedin'])) {
@@ -24,6 +31,7 @@ if ($_SESSION['login_attempts'] >= 5) {
     }
 }
 
+// Verificar se os dados foram enviados via POST
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
         // Validação básica
@@ -39,43 +47,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             throw new Exception("Erro de conexão com o banco de dados");
         }
 
-        // Consulta preparada
-        $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
-        if (!$stmt) {
-            throw new Exception("Erro na preparação da consulta");
-        }
-
+        // Preparar a consulta SQL
+        $sql = "SELECT * FROM usuarios WHERE username = ?";
+        $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $username);
         $stmt->execute();
         $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
-
-        if ($user && password_verify($password, $user['password'])) {
-            // Reset tentativas de login
-            $_SESSION['login_attempts'] = 0;
-            
-            // Configurar sessão
-            $_SESSION['loggedin'] = true;
-            $_SESSION['user'] = [
-                'id' => $user['id'],
-                'name' => $user['name'],
-                'username' => $user['username'],
-                'is_admin' => (bool)$user['is_admin']
-            ];
-
-            // Registrar login bem-sucedido
-            $ip = $_SERVER['REMOTE_ADDR'];
-            error_log("Login bem-sucedido: {$username} - IP: {$ip}");
-
-            // Redirecionar
-            header("Location: autenticacao.php");
-            exit;
+        
+        if ($result->num_rows === 1) {
+            $user = $result->fetch_assoc();
+            // Verificar a senha
+            if (password_verify($password, $user['password'])) {
+                // Login bem sucedido
+                $_SESSION['loggedin'] = true;
+                $_SESSION['user'] = [
+                    'id' => $user['id'],
+                    'name' => $user['name'],
+                    'username' => $user['username'],
+                    'role' => $user['role']
+                ];
+                header("Location: ../index.php");
+                exit;
+            } else {
+                $_SESSION['error'] = "Senha incorreta";
+                header("Location: ../login.php");
+                exit;
+            }
         } else {
-            // Incrementar tentativas
-            $_SESSION['login_attempts']++;
-            $_SESSION['last_attempt'] = time();
-            
-            throw new Exception("Credenciais inválidas");
+            $_SESSION['error'] = "Usuário não encontrado";
+            header("Location: ../login.php");
+            exit;
         }
     } catch (Exception $e) {
         $_SESSION['login_error'] = $e->getMessage();
@@ -85,8 +86,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->close();
         }
     }
-
-    header("Location: user-login.php");
+} else {
+    header("Location: ../login.php");
     exit;
 }
 ?>

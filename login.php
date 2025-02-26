@@ -1,4 +1,12 @@
 <?php
+// Habilitar exibição de erros
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Incluir conexão com o banco
+require_once 'db.php';
+
 session_start();
 include 'db_connection.php'; // Inclua a conexão com o banco de dados
 
