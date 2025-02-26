@@ -167,14 +167,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   </form>
                 </div>
               </div>
+
+              <div class="credits">
+                <div class="copyright">
+                  &copy; Copyright <strong><span>Sou + Digital</span></strong>. Todos os direitos reservados
+                </div>
+                <div class="credits">
+                  Desenvolvido por <a href="https://www.linkedin.com/in/patrick-da-costa-cruz-08493212a/" target="_blank">Patrick C Cruz</a>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
       </section>
     </div>
   </main>
-
-  <?php include_once '../includes/footer.php'; ?>
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
