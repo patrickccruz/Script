@@ -1,10 +1,7 @@
 <?php
-function enviarNotificacao($userId, $tipo, $titulo, $mensagem, $link = null) {
-    $conn = new mysqli('localhost', 'root', '', 'sou_digital');
-    if ($conn->connect_error) {
-        return false;
-    }
+require_once __DIR__ . '/../db.php';
 
+function enviarNotificacao($userId, $tipo, $titulo, $mensagem, $link = null) {
     // Configurar timezone do MySQL
     $conn->query("SET time_zone = '-03:00'");
 

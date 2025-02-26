@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../db.php';
 session_start();
 header('Content-Type: application/json');
 
@@ -21,7 +22,7 @@ if (!isset($data['id']) || !is_numeric($data['id'])) {
 $notifId = (int)$data['id'];
 
 // Conexão com o banco de dados
-$conn = new mysqli('localhost', 'root', '', 'sou_digital');
+// $conn = new mysqli('localhost', 'root', '', 'sou_digital');
 if ($conn->connect_error) {
     http_response_code(500);
     echo json_encode(['error' => 'Erro de conexão com o banco']);

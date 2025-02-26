@@ -2,6 +2,8 @@
 session_start();
 header('Content-Type: application/json');
 
+require_once __DIR__ . '/../db.php';
+
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true) {
     http_response_code(401);
     echo json_encode(['error' => 'Não autorizado']);
@@ -13,14 +15,6 @@ $user = $_SESSION['user'];
 // Receber dados do POST
 $data = json_decode(file_get_contents('php://input'), true);
 $lastCheck = isset($data['lastCheck']) ? new DateTime($data['lastCheck']) : new DateTime('-30 seconds');
-
-// Conexão com o banco de dados
-$conn = new mysqli('localhost', 'root', '', 'sou_digital');
-if ($conn->connect_error) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro de conexão com o banco']);
-    exit;
-}
 
 // Buscar novas notificações
 $sql = "SELECT * FROM notificacoes WHERE user_id = ? AND data_criacao > ? ORDER BY data_criacao DESC";

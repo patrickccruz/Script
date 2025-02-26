@@ -18,10 +18,7 @@ if (!isset($user)) {
 }
 
 // Buscar notificações não lidas
-$conn = new mysqli('localhost', 'root', '', 'sou_digital');
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once __DIR__ . '/../db.php';
 
 // Configurar timezone do MySQL
 $conn->query("SET time_zone = '-03:00'");

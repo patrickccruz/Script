@@ -1,8 +1,8 @@
 <?php
 $servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "sou_digital"; // Atualize o nome do banco de dados
+$username = "sou_digital";  // Usuário do banco de dados
+$password = "SuaSenhaSegura123!";  // Senha do banco de dados
+$dbname = "sou_digital";  // Nome do banco de dados
 
 // Criar conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
