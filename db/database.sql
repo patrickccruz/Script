@@ -39,21 +39,20 @@ CREATE TABLE IF NOT EXISTS reembolsos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   data_chamado DATE NOT NULL,
-  numero_chamado INT NULL, -- Alterado para INT e permitindo NULL
+  numero_chamado INT NULL, 
   informacoes_adicionais TEXT,
-  valor DECIMAL(10,2) NOT NULL, -- Campo para o valor do reembolso
+  valor DECIMAL(10,2) NOT NULL, 
   tipo_reembolso ENUM('estacionamento', 'pedagio', 'alimentacao', 'transporte', 'hospedagem', 'outros') NOT NULL,
   status ENUM('pendente', 'aprovado', 'criticado', 'reprovado') NOT NULL DEFAULT 'pendente',
-  comentario_admin TEXT, -- Campo para feedback do administrador
-  arquivo_path TEXT, -- Alterado para TEXT para permitir múltiplos arquivos
+  comentario_admin TEXT, 
+  arquivo_path TEXT, 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Tabelas do Blog
 
--- Tabela para posts do blog
+
 CREATE TABLE IF NOT EXISTS blog_posts (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -68,7 +67,7 @@ CREATE TABLE IF NOT EXISTS blog_posts (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Tabela para links dos posts
+
 CREATE TABLE IF NOT EXISTS blog_links (
     id INT PRIMARY KEY AUTO_INCREMENT,
     post_id INT NOT NULL,
@@ -77,7 +76,7 @@ CREATE TABLE IF NOT EXISTS blog_links (
     FOREIGN KEY (post_id) REFERENCES blog_posts(id) ON DELETE CASCADE
 );
 
--- Tabela para comentários
+
 CREATE TABLE IF NOT EXISTS blog_comentarios (
     id INT PRIMARY KEY AUTO_INCREMENT,
     post_id INT NOT NULL,
@@ -88,7 +87,7 @@ CREATE TABLE IF NOT EXISTS blog_comentarios (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Tabela para reações
+
 CREATE TABLE IF NOT EXISTS blog_reacoes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     post_id INT NOT NULL,
@@ -100,7 +99,7 @@ CREATE TABLE IF NOT EXISTS blog_reacoes (
     UNIQUE KEY unique_reacao (post_id, user_id)
 );
 
--- Tabela para notificações
+
 CREATE TABLE IF NOT EXISTS notificacoes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -119,8 +118,7 @@ CREATE TRIGGER before_insert_users
 BEFORE INSERT ON users
 FOR EACH ROW
 BEGIN
-  -- Remover a linha que usa bcrypt
-  -- SET NEW.password = bcrypt(NEW.password);
+
 END; //
 
 DELIMITER ;
